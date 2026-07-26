@@ -22,6 +22,7 @@ class Program
         Console.WriteLine("2.Add new occurrence");
         Console.WriteLine("3.Update occurrence");
         Console.WriteLine("4.Delete occurrence");
+        Console.WriteLine("5.Exit Application");
 
         string? input = Console.ReadLine();
 
@@ -35,6 +36,9 @@ class Program
                 break;
             case "4":
                 DeleteOccurrence();
+                break;
+            case "5":
+                Environment.Exit(0);
                 break;
             default:
                 Console.WriteLine("Invalid input.");
