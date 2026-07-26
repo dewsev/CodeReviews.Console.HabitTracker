@@ -30,7 +30,7 @@ public class HabitOccurrenceRepository
         }
     }
 
-    private void Insert(HabitOccurrence occurrence)
+    public void Insert(string date, int quantity)
     {
         using (var connection = new SqliteConnection(ConnectionString))
         {
@@ -38,7 +38,7 @@ public class HabitOccurrenceRepository
             var insertCommand = connection.CreateCommand();
             insertCommand.CommandText = 
                 $@"INSERT INTO HabitOccurrences (OccurrenceDate, Quantity)
-                  VALUES ('{occurrence.Date}', {occurrence.Quantity})";
+                  VALUES ('{date}', {quantity})";
     
             insertCommand.ExecuteNonQuery();
             connection.Close();
