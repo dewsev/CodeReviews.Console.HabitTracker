@@ -42,13 +42,20 @@ class Program
         Console.Clear();
         List<HabitOccurrence> occurrences = HabitOccurrenceRepository.GetAll();
 
-        foreach (HabitOccurrence occurrence in occurrences)
+        if (occurrences.Count == 0)
         {
-            WriteColored($"\nID: {occurrence.Id}", ConsoleColor.Cyan);
-            Console.Write(" - ");
-            WriteColored(occurrence.Date.ToString("dd-MM-yyyy", new CultureInfo("en-US")), ConsoleColor.Cyan);
-            Console.Write(" - ");
-            WriteColored($"Quantity: {occurrence.Quantity}", ConsoleColor.Cyan);
+            Console.WriteLine("You have not saved any occurrences yet.");
+        }
+        else
+        {
+            foreach (HabitOccurrence occurrence in occurrences)
+            {
+                WriteColored($"\nID: {occurrence.Id}", ConsoleColor.Cyan);
+                Console.Write(" - ");
+                WriteColored(occurrence.Date.ToString("dd-MM-yyyy", new CultureInfo("en-US")), ConsoleColor.Cyan);
+                Console.Write(" - ");
+                WriteColored($"Quantity: {occurrence.Quantity}", ConsoleColor.Cyan);
+            }    
         }
     }
     
