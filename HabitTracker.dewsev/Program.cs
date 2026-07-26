@@ -4,7 +4,9 @@ namespace HabitTracker.dewsev;
 
 class Program
 {
-    private static readonly HabitOccurrenceRepository HabitOccurrenceRepository = new();
+    private const string DateFormat = "dd-MM-yyyy";
+    private static readonly CultureInfo Culture = new("en-US");
+    private static readonly HabitOccurrenceRepository HabitOccurrenceRepository = new(DateFormat, Culture);
     
     static void Main(string[] args)
     {
@@ -34,6 +36,9 @@ class Program
             case "2":
                 AddOccurrence();
                 break;
+            case "3":
+                UpdateOccurrence();
+                break;
             case "4":
                 DeleteOccurrence();
                 break;
@@ -61,7 +66,7 @@ class Program
             {
                 WriteColored($"ID: {occurrence.Id}", ConsoleColor.Cyan);
                 Console.Write(" - ");
-                WriteColored(occurrence.Date.ToString("dd-MM-yyyy", new CultureInfo("en-US")), ConsoleColor.Cyan);
+                WriteColored(FormatDateTimeString(occurrence.Date), ConsoleColor.Cyan);
                 Console.Write(" - ");
                 WriteColored($"Quantity: {occurrence.Quantity}\n", ConsoleColor.Cyan);
             }
@@ -77,12 +82,43 @@ class Program
     private static void AddOccurrence()
     {
         Console.Clear();
-        string date = GetDateInput("Provide a date (dd-MM-yyyy): ");
+        string date = GetDateInput($"Provide a date ({DateFormat}): ");
         int quantity = GetNumericInput("Provide quantity: ");
 
         HabitOccurrenceRepository.Insert(date, quantity);
     }
 
+    private static void UpdateOccurrence()
+    {
+        ListAllOccurrences();
+        Console.WriteLine();
+        
+        int id = GetNumericInput("Provide ID of an occurence that you want to update: ");
+        
+        HabitOccurrence? occurrence = HabitOccurrenceRepository.GetSingle(id);
+        
+        Console.Clear();
+        if (occurrence == null)
+        {
+            WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
+        }
+        else
+        {
+            Console.WriteLine($"Editing Occurrence with ID {occurrence.Id}\n");
+        
+            string date = GetDateInput($"Provide new date (current: {FormatDateTimeString(occurrence.Date)}): ");
+            int quantity = GetNumericInput($"Provide quantity (current: {occurrence.Quantity}): ");
+        
+            HabitOccurrenceRepository.Update(id, date, quantity);
+        
+            Console.Clear();
+            WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
+        }
+        
+        Console.WriteLine("\nPress any key to go back to the Main Menu.");
+        Console.ReadKey();
+    }
+    
     private static void DeleteOccurrence()
     {
         ListAllOccurrences();
@@ -96,14 +132,13 @@ class Program
 
             int deletedCount = HabitOccurrenceRepository.Delete(id);
 
+            Console.Clear();
             if (deletedCount == 0)
             {
-                Console.Clear();
                 WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
             }
             else
             {
-                Console.Clear();
                 WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
             }
         }
@@ -131,7 +166,7 @@ class Program
     {
         Console.Write(message);
         string? input = Console.ReadLine();
-        while (!DateTime.TryParseExact(input, "dd-MM-yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
+        while (!DateTime.TryParseExact(input, DateFormat, Culture, DateTimeStyles.None, out _))
         {
             WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
             Console.Write(message);
@@ -146,5 +181,10 @@ class Program
         Console.ForegroundColor = color;
         Console.Write(message);
         Console.ResetColor();
+    }
+
+    private static string FormatDateTimeString(DateTime dateTime)
+    {
+        return dateTime.ToString(DateFormat, Culture);
     }
 }

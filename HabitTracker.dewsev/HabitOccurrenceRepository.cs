@@ -7,8 +7,14 @@ public class HabitOccurrenceRepository
 {
     private const string ConnectionString = "Data Source=HabitTracker.db";
 
-    public HabitOccurrenceRepository()
+    private readonly string _dateFormat;
+    private readonly CultureInfo _culture;
+    
+    public HabitOccurrenceRepository(string dateFormat, CultureInfo culture)
     {
+        _dateFormat = dateFormat;
+        _culture = culture;
+        
         Init();
     }
 
@@ -17,8 +23,8 @@ public class HabitOccurrenceRepository
         using (var connection = new SqliteConnection(ConnectionString))
         {
             connection.Open();
+            
             var createTableCommand = connection.CreateCommand();
-
             createTableCommand.CommandText =
                 @"CREATE TABLE IF NOT EXISTS HabitOccurrences (
                     HabitOccurrenceID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +33,6 @@ public class HabitOccurrenceRepository
                     )";
 
             createTableCommand.ExecuteNonQuery();
-            connection.Close();
         }
     }
 
@@ -36,12 +41,12 @@ public class HabitOccurrenceRepository
         using (var connection = new SqliteConnection(ConnectionString))
         {
             connection.Open();
+            
             var command = connection.CreateCommand();
-
             command.CommandText = "SELECT * FROM HabitOccurrences";
 
             List<HabitOccurrence> occurrences = [];
-            SqliteDataReader reader = command.ExecuteReader();
+            var reader = command.ExecuteReader();
 
             if (reader.HasRows)
             {
@@ -50,7 +55,7 @@ public class HabitOccurrenceRepository
                     occurrences.Add(new HabitOccurrence
                     {
                         Id = reader.GetInt32(0),
-                        Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+                        Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
                         Quantity = reader.GetInt32(2)
                     });
                 }
@@ -67,16 +72,11 @@ public class HabitOccurrenceRepository
             connection.Open();
             
             var deleteCommand = connection.CreateCommand();
-
             deleteCommand.CommandText = 
                 $@"DELETE FROM HabitOccurrences
                   WHERE HabitOccurrenceID = {id}";
 
-            int deletedCount = deleteCommand.ExecuteNonQuery();
-            
-            connection.Close();
-
-            return deletedCount;
+            return deleteCommand.ExecuteNonQuery();
         }
     }
     
@@ -91,7 +91,59 @@ public class HabitOccurrenceRepository
                   VALUES ('{date}', {quantity})";
     
             insertCommand.ExecuteNonQuery();
-            connection.Close();
+        }
+    }
+
+    public HabitOccurrence? GetSingle(int id)
+    {
+        using (var connection = new SqliteConnection(ConnectionString))
+        {
+            connection.Open();
+            var command = connection.CreateCommand();
+            command.CommandText = $"SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = {id}";
+
+            var reader = command.ExecuteReader();
+
+            if (!reader.HasRows)
+            {
+                return null;
+            }
+
+            reader.Read();
+            
+            return new HabitOccurrence
+            {
+                Id = reader.GetInt32(0),
+                Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
+                Quantity = reader.GetInt32(2)
+            };
+        }
+    }
+    
+    // public bool DoesOccurrenceExist(int id)
+    // {
+    //     using (var connection = new SqliteConnection(ConnectionString))
+    //     {
+    //         connection.Open();
+    //         var checkCommand = connection.CreateCommand();
+    ////         checkCommand.CommandText = $@"SELECT EXISTS(SELECT 1 FROM HabitOccurrences WHERE HabitOccurrenceID = {id})";
+    //         int checkQuery = Convert.ToInt32(checkCommand.ExecuteScalar());
+    //         return checkQuery != 0;
+    //     }
+    // }
+    
+    public void Update(int id, string date, int quantity)
+    {
+        using (var connection = new SqliteConnection(ConnectionString))
+        {
+            connection.Open();
+            var updateCommand = connection.CreateCommand();
+            updateCommand.CommandText = 
+                $@"UPDATE HabitOccurrences
+                   SET OccurrenceDate = '{date}', Quantity = {quantity}
+                   WHERE HabitOccurrenceID = {id}";
+    
+            updateCommand.ExecuteNonQuery();
         }
     }
 }
