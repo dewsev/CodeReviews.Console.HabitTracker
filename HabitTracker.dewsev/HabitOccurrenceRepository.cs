@@ -60,6 +60,26 @@ public class HabitOccurrenceRepository
         }
     }
     
+    public int Delete(int id)
+    {
+        using (var connection = new SqliteConnection(ConnectionString))
+        {
+            connection.Open();
+            
+            var deleteCommand = connection.CreateCommand();
+
+            deleteCommand.CommandText = 
+                $@"DELETE FROM HabitOccurrences
+                  WHERE HabitOccurrenceID = {id}";
+
+            int rowCount = deleteCommand.ExecuteNonQuery();
+            
+            connection.Close();
+
+            return rowCount;
+        }
+    }
+    
     public void Insert(string date, int quantity)
     {
         using (var connection = new SqliteConnection(ConnectionString))

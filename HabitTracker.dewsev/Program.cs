@@ -8,8 +8,10 @@ class Program
     
     static void Main(string[] args)
     {
-
-        MainMenu();
+        while (true)
+        {
+            MainMenu();    
+        }
     }
 
     private static void MainMenu()
@@ -30,6 +32,9 @@ class Program
                 break;
             case "2":
                 AddOccurrence();
+                break;
+            case "4":
+                DeleteOccurrence();
                 break;
             default:
                 Console.WriteLine("Invalid input.");
@@ -68,6 +73,34 @@ class Program
         HabitOccurrenceRepository.Insert(date, quantity);
     }
 
+    private static void DeleteOccurrence()
+    {
+        
+        ListAllOccurrences();
+
+        int occurrencesCount = HabitOccurrenceRepository.GetAll().Count;
+        
+        if (occurrencesCount != 0)
+        {
+            int id = GetNumericInput("\n\nProvide ID of an occurence that you want to delete: ");
+
+            int deletedCount = HabitOccurrenceRepository.Delete(id);
+
+            if (deletedCount == 0)
+            {
+                WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
+            }
+            else
+            {
+                Console.Clear();
+                WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
+            }
+        }
+        
+        Console.WriteLine("\nPress any key to go back to Main Menu.");
+        Console.ReadKey();
+    }
+    
     private static int GetNumericInput(string message)
     {
         Console.Write(message);
