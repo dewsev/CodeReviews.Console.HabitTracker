@@ -24,14 +24,16 @@ class Program
         Console.WriteLine("2.Add new occurrence");
         Console.WriteLine("3.Update occurrence");
         Console.WriteLine("4.Delete occurrence");
-        Console.WriteLine("5.Exit Application");
-
-        string? input = Console.ReadLine();
-
-        switch (input)
+        Console.WriteLine("5.Exit Application\n");
+        
+        Console.Write("Your choice: ");
+        string? choice = Console.ReadLine();
+        switch (choice)
         {
             case "1":
-                ListAllOccurrences(true);
+                ListAllOccurrences();
+                Console.WriteLine("\nPress any key to go back to the Main Menu.");
+                Console.ReadKey();
                 break;
             case "2":
                 AddOccurrence();
@@ -44,9 +46,6 @@ class Program
                 break;
             case "5":
                 Environment.Exit(0);
-                break;
-            default:
-                Console.WriteLine("Invalid input.");
                 break;
         }
     }
@@ -70,12 +69,6 @@ class Program
                 Console.Write(" - ");
                 WriteColored($"Quantity: {occurrence.Quantity}\n", ConsoleColor.Cyan);
             }
-        }
-
-        if (askForInput)
-        {
-            Console.WriteLine("\nPress any key to go back to the Main Menu.");
-            Console.ReadKey();
         }
     }
     
@@ -175,14 +168,14 @@ class Program
 
         return input;
     }
-
+    
     private static void WriteColored(string message, ConsoleColor color)
     {
         Console.ForegroundColor = color;
         Console.Write(message);
         Console.ResetColor();
     }
-
+    
     private static string FormatDateTimeString(DateTime dateTime)
     {
         return dateTime.ToString(DateFormat, Culture);
