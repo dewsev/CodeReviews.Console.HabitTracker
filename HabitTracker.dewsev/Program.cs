@@ -107,7 +107,7 @@ class Program
             Console.WriteLine($"Editing Occurrence with ID {occurrence.Id}\n");
         
             string date = GetDateInput($"Provide new date (current: {FormatDateTimeString(occurrence.Date)}): ");
-            int quantity = GetNumericInput($"Provide quantity (current: {occurrence.Quantity}): ");
+            int quantity = GetNumericInput($"Provide new quantity (current: {occurrence.Quantity}): ");
         
             HabitOccurrenceRepository.Update(id, date, quantity);
         
