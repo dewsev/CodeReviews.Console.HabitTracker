@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
@@ -30,6 +31,35 @@ public class HabitOccurrenceRepository
         }
     }
 
+    public List<HabitOccurrence> GetAll()
+    {
+        using (var connection = new SqliteConnection(ConnectionString))
+        {
+            connection.Open();
+            var command = connection.CreateCommand();
+
+            command.CommandText = "SELECT * FROM HabitOccurrences";
+
+            List<HabitOccurrence> occurrences = [];
+            SqliteDataReader reader = command.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    occurrences.Add(new HabitOccurrence
+                    {
+                        Id = reader.GetInt32(0),
+                        Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+                        Quantity = reader.GetInt32(2)
+                    });
+                }
+            }
+  
+            return occurrences;
+        }
+    }
+    
     public void Insert(string date, int quantity)
     {
         using (var connection = new SqliteConnection(ConnectionString))

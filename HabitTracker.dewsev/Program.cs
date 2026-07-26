@@ -4,7 +4,7 @@ namespace HabitTracker.dewsev;
 
 class Program
 {
-    private static readonly HabitOccurrenceRepository _habitOccurrenceRepository = new();
+    private static readonly HabitOccurrenceRepository HabitOccurrenceRepository = new();
     
     static void Main(string[] args)
     {
@@ -25,6 +25,9 @@ class Program
 
         switch (input)
         {
+            case "1":
+                ListAllOccurrences();
+                break;
             case "2":
                 AddOccurrence();
                 break;
@@ -34,13 +37,28 @@ class Program
         }
     }
 
+    private static void ListAllOccurrences()
+    {
+        Console.Clear();
+        List<HabitOccurrence> occurrences = HabitOccurrenceRepository.GetAll();
+
+        foreach (HabitOccurrence occurrence in occurrences)
+        {
+            WriteColored($"\nID: {occurrence.Id}", ConsoleColor.Cyan);
+            Console.Write(" - ");
+            WriteColored(occurrence.Date.ToString("dd-MM-yyyy", new CultureInfo("en-US")), ConsoleColor.Cyan);
+            Console.Write(" - ");
+            WriteColored($"Quantity: {occurrence.Quantity}", ConsoleColor.Cyan);
+        }
+    }
+    
     private static void AddOccurrence()
     {
         Console.Clear();
         string date = GetDateInput("Provide a date (dd-MM-yyyy): ");
         int quantity = GetNumericInput("Provide quantity: ");
 
-        _habitOccurrenceRepository.Insert(date, quantity);
+        HabitOccurrenceRepository.Insert(date, quantity);
     }
 
     private static int GetNumericInput(string message)
@@ -50,7 +68,7 @@ class Program
         int numericInput;
         while (!int.TryParse(input, out numericInput))
         {
-            WriteLineColored("That's not a valid number. Try again.", ConsoleColor.Red);
+            WriteColored("That's not a valid number. Try again.\n", ConsoleColor.Red);
             Console.Write(message);
             input = Console.ReadLine();
         }
@@ -64,7 +82,7 @@ class Program
         string? input = Console.ReadLine();
         while (!DateTime.TryParseExact(input, "dd-MM-yyyy", new CultureInfo("en-US"), DateTimeStyles.None, out _))
         {
-            WriteLineColored("Invalid date format. Try again.", ConsoleColor.Red);
+            WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
             Console.Write(message);
             input = Console.ReadLine();
         }
@@ -72,10 +90,10 @@ class Program
         return input;
     }
 
-    private static void WriteLineColored(string message, ConsoleColor color)
+    private static void WriteColored(string message, ConsoleColor color)
     {
         Console.ForegroundColor = color;
-        Console.WriteLine(message);
+        Console.Write(message);
         Console.ResetColor();
     }
 }
