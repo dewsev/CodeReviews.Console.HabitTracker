@@ -28,7 +28,7 @@ class Program
         switch (input)
         {
             case "1":
-                ListAllOccurrences();
+                ListAllOccurrences(true);
                 break;
             case "2":
                 AddOccurrence();
@@ -42,7 +42,7 @@ class Program
         }
     }
 
-    private static void ListAllOccurrences()
+    private static void ListAllOccurrences(bool askForInput = false)
     {
         Console.Clear();
         List<HabitOccurrence> occurrences = HabitOccurrenceRepository.GetAll();
@@ -62,6 +62,12 @@ class Program
                 WriteColored($"Quantity: {occurrence.Quantity}\n", ConsoleColor.Cyan);
             }
         }
+
+        if (askForInput)
+        {
+            Console.WriteLine("\nPress any key to go back to the Main Menu.");
+            Console.ReadKey();
+        }
     }
     
     private static void AddOccurrence()
@@ -75,7 +81,6 @@ class Program
 
     private static void DeleteOccurrence()
     {
-        
         ListAllOccurrences();
         Console.WriteLine();
         
