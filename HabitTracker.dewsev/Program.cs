@@ -55,12 +55,12 @@ class Program
         {
             foreach (HabitOccurrence occurrence in occurrences)
             {
-                WriteColored($"\nID: {occurrence.Id}", ConsoleColor.Cyan);
+                WriteColored($"ID: {occurrence.Id}", ConsoleColor.Cyan);
                 Console.Write(" - ");
                 WriteColored(occurrence.Date.ToString("dd-MM-yyyy", new CultureInfo("en-US")), ConsoleColor.Cyan);
                 Console.Write(" - ");
-                WriteColored($"Quantity: {occurrence.Quantity}", ConsoleColor.Cyan);
-            }    
+                WriteColored($"Quantity: {occurrence.Quantity}\n", ConsoleColor.Cyan);
+            }
         }
     }
     
@@ -77,17 +77,19 @@ class Program
     {
         
         ListAllOccurrences();
-
+        Console.WriteLine();
+        
         int occurrencesCount = HabitOccurrenceRepository.GetAll().Count;
         
         if (occurrencesCount != 0)
         {
-            int id = GetNumericInput("\n\nProvide ID of an occurence that you want to delete: ");
+            int id = GetNumericInput("Provide ID of an occurence that you want to delete: ");
 
             int deletedCount = HabitOccurrenceRepository.Delete(id);
 
             if (deletedCount == 0)
             {
+                Console.Clear();
                 WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
             }
             else
@@ -106,10 +108,10 @@ class Program
         Console.Write(message);
         string? input = Console.ReadLine();
         int numericInput;
-        while (!int.TryParse(input, out numericInput))
+        while (string.IsNullOrEmpty(input) || !int.TryParse(input, out numericInput) || Convert.ToInt32(input) < 0)
         {
-            WriteColored("That's not a valid number. Try again.\n", ConsoleColor.Red);
-            Console.Write(message);
+            WriteColored("That's not a valid number. Try again.", ConsoleColor.Red);
+            Console.Write($"\n{message}");
             input = Console.ReadLine();
         }
 

@@ -72,11 +72,11 @@ public class HabitOccurrenceRepository
                 $@"DELETE FROM HabitOccurrences
                   WHERE HabitOccurrenceID = {id}";
 
-            int rowCount = deleteCommand.ExecuteNonQuery();
+            int deletedCount = deleteCommand.ExecuteNonQuery();
             
             connection.Close();
 
-            return rowCount;
+            return deletedCount;
         }
     }
     
