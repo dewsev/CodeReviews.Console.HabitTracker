@@ -50,7 +50,7 @@ class Program
         }
     }
 
-    private static void ListAllOccurrences(bool askForInput = false)
+    private static void ListAllOccurrences()
     {
         Console.Clear();
         List<HabitOccurrence> occurrences = HabitOccurrenceRepository.GetAll();
