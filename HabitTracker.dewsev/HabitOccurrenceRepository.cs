@@ -63,12 +63,12 @@ public class HabitOccurrenceRepository
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
             
-        var deleteCommand = connection.CreateCommand();
-        deleteCommand.CommandText = 
-            $@"DELETE FROM HabitOccurrences
-                  WHERE HabitOccurrenceID = {id}";
-
-        return deleteCommand.ExecuteNonQuery();
+        var command = connection.CreateCommand();
+        
+        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        command.CommandText = "DELETE FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
+        
+        return command.ExecuteNonQuery();
     }
     
     public void Insert(string date, int quantity)
@@ -76,12 +76,13 @@ public class HabitOccurrenceRepository
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
         
-        var insertCommand = connection.CreateCommand();
-        insertCommand.CommandText = 
-            $@"INSERT INTO HabitOccurrences (OccurrenceDate, Quantity)
-                  VALUES ('{date}', {quantity})";
+        var command = connection.CreateCommand();
+        
+        command.Parameters.Add("@date", SqliteType.Text).Value = date;
+        command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
+        command.CommandText = "INSERT INTO HabitOccurrences (OccurrenceDate, Quantity) VALUES (@date, @quantity)";
     
-        insertCommand.ExecuteNonQuery();
+        command.ExecuteNonQuery();
     }
 
     public HabitOccurrence? GetSingle(int id)
@@ -90,7 +91,9 @@ public class HabitOccurrenceRepository
         connection.Open();
         
         var command = connection.CreateCommand();
-        command.CommandText = $"SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = {id}";
+        
+        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        command.CommandText = "SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
 
         using var reader = command.ExecuteReader();
 
@@ -109,29 +112,20 @@ public class HabitOccurrenceRepository
         };
     }
     
-     // public bool DoesOccurrenceExist(int id)
-     // {
-     //     using var connection = new SqliteConnection(ConnectionString);
-     //     connection.Open();
-     //     
-     //     var command = connection.CreateCommand();
-     ////     command.CommandText = $@"SELECT EXISTS(SELECT 1 FROM HabitOccurrences WHERE HabitOccurrenceID = {id})";
-     //     
-     //     int checkQuery = Convert.ToInt32(command.ExecuteScalar());
-     //     return checkQuery != 0;
-     // }
-    
     public void Update(int id, string date, int quantity)
     {
         using var connection = new SqliteConnection(ConnectionString);
         connection.Open();
         
-        var updateCommand = connection.CreateCommand();
-        updateCommand.CommandText = 
-            $@"UPDATE HabitOccurrences
-                   SET OccurrenceDate = '{date}', Quantity = {quantity}
-                   WHERE HabitOccurrenceID = {id}";
+        var command = connection.CreateCommand();
+        
+        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        command.Parameters.Add("@date", SqliteType.Text).Value = date;
+        command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
+        command.CommandText = @"UPDATE HabitOccurrences 
+                                SET OccurrenceDate = @date, Quantity = @quantity
+                                WHERE HabitOccurrenceID = @id";
     
-        updateCommand.ExecuteNonQuery();
+        command.ExecuteNonQuery();
     }
 }
