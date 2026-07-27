@@ -4,9 +4,11 @@ namespace HabitTracker.dewsev;
 
 class Program
 {
+    private const string DbConnectionString = "Data Source=HabitTracker.db";
     private const string DateFormat = "dd-MM-yyyy";
     private static readonly CultureInfo Culture = new("en-US");
-    private static readonly HabitOccurrenceRepository HabitOccurrenceRepository = new(DateFormat, Culture);
+    private static readonly HabitsRepository HabitsRepository = new(DbConnectionString);
+    private static readonly HabitOccurrencesRepository HabitOccurrencesRepository = new(DbConnectionString, DateFormat, Culture);
     
     static void Main(string[] args)
     {
@@ -20,40 +22,44 @@ class Program
     {
         Console.Clear();
         Console.WriteLine("Welcome to Habit Tracker!");
-        Console.WriteLine("\n1.List all occurrences");
-        Console.WriteLine("2.Add new occurrence");
-        Console.WriteLine("3.Update occurrence");
-        Console.WriteLine("4.Delete occurrence");
-        Console.WriteLine("5.Exit Application\n");
+        Console.WriteLine("\n1.Create new habit");
+        Console.WriteLine("2.List all occurrences");
+        Console.WriteLine("3.Add new occurrence");
+        Console.WriteLine("4.Update occurrence");
+        Console.WriteLine("5.Delete occurrence");
+        Console.WriteLine("6.Exit Application\n");
         
         Console.Write("Your choice: ");
         string? choice = Console.ReadLine();
         switch (choice)
         {
             case "1":
+                // CreateNewHabit();
+                break;
+            case "2":
                 ListAllOccurrences();
                 Console.WriteLine("\nPress any key to go back to the Main Menu.");
                 Console.ReadKey();
                 break;
-            case "2":
+            case "3":
                 AddOccurrence();
                 break;
-            case "3":
+            case "4":
                 UpdateOccurrence();
                 break;
-            case "4":
+            case "5":
                 DeleteOccurrence();
                 break;
-            case "5":
+            case "6":
                 Environment.Exit(0);
                 break;
         }
     }
-
+    
     private static void ListAllOccurrences()
     {
         Console.Clear();
-        List<HabitOccurrence> occurrences = HabitOccurrenceRepository.GetAll();
+        List<HabitOccurrence> occurrences = HabitOccurrencesRepository.GetAll();
 
         if (occurrences.Count == 0)
         {
@@ -78,7 +84,7 @@ class Program
         string date = GetDateInput($"Provide a date ({DateFormat} or \"now\"): ");
         int quantity = GetNumericInput("Provide quantity: ");
 
-        HabitOccurrenceRepository.Insert(date, quantity);
+        HabitOccurrencesRepository.Insert(date, quantity);
     }
 
     private static void UpdateOccurrence()
@@ -88,7 +94,7 @@ class Program
         
         int id = GetNumericInput("Provide ID of an occurence that you want to update: ");
         
-        HabitOccurrence? occurrence = HabitOccurrenceRepository.GetSingle(id);
+        HabitOccurrence? occurrence = HabitOccurrencesRepository.GetSingle(id);
         
         Console.Clear();
         if (occurrence == null)
@@ -102,7 +108,7 @@ class Program
             string date = GetDateInput($"Provide new date (current: {FormatDateTimeString(occurrence.Date)}): ");
             int quantity = GetNumericInput($"Provide new quantity (current: {occurrence.Quantity}): ");
         
-            HabitOccurrenceRepository.Update(id, date, quantity);
+            HabitOccurrencesRepository.Update(id, date, quantity);
         
             Console.Clear();
             WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
@@ -117,13 +123,13 @@ class Program
         ListAllOccurrences();
         Console.WriteLine();
         
-        int occurrencesCount = HabitOccurrenceRepository.GetAll().Count;
+        int occurrencesCount = HabitOccurrencesRepository.GetAll().Count;
         
         if (occurrencesCount != 0)
         {
             int id = GetNumericInput("Provide ID of an occurence that you want to delete: ");
 
-            int deletedCount = HabitOccurrenceRepository.Delete(id);
+            int deletedCount = HabitOccurrencesRepository.Delete(id);
 
             Console.Clear();
             if (deletedCount == 0)

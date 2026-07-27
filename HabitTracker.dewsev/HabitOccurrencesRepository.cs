@@ -3,32 +3,34 @@ using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
 
-public class HabitOccurrenceRepository
+public class HabitOccurrencesRepository
 {
-    private const string ConnectionString = "Data Source=HabitTracker.db";
-
+    private readonly string _connectionString;
     private readonly string _dateFormat;
     private readonly CultureInfo _culture;
     
-    public HabitOccurrenceRepository(string dateFormat, CultureInfo culture)
+    public HabitOccurrencesRepository(string connectionString, string dateFormat, CultureInfo culture)
     {
+        _connectionString = connectionString;
         _dateFormat = dateFormat;
         _culture = culture;
         
         Init();
     }
 
-    private static void Init()
+    private void Init()
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
-            
+        
         var createTableCommand = connection.CreateCommand();
         createTableCommand.CommandText =
             @"CREATE TABLE IF NOT EXISTS HabitOccurrences (
                     HabitOccurrenceID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    OccurrenceDate TEXT NOT NULL,
-                    Quantity INTEGER NOT NULL
+                    Date TEXT NOT NULL,
+                    Quantity INTEGER NOT NULL,
+                    HabitID INTEGER NOT NULL,
+                    FOREIGN KEY (HabitID) REFERENCES Habits(HabitID) ON DELETE CASCADE
                     )";
 
         createTableCommand.ExecuteNonQuery();
@@ -36,14 +38,14 @@ public class HabitOccurrenceRepository
 
     public List<HabitOccurrence> GetAll()
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
         var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM HabitOccurrences";
 
         List<HabitOccurrence> occurrences = [];
-        using var reader = command.ExecuteReader();
+        var reader = command.ExecuteReader();
 
         while (reader.Read())
         {
@@ -60,7 +62,7 @@ public class HabitOccurrenceRepository
     
     public int Delete(int id)
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
         var command = connection.CreateCommand();
@@ -73,21 +75,21 @@ public class HabitOccurrenceRepository
     
     public void Insert(string date, int quantity)
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
         var command = connection.CreateCommand();
         
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
-        command.CommandText = "INSERT INTO HabitOccurrences (OccurrenceDate, Quantity) VALUES (@date, @quantity)";
+        command.CommandText = "INSERT INTO HabitOccurrences (Date, Quantity) VALUES (@date, @quantity)";
     
         command.ExecuteNonQuery();
     }
 
     public HabitOccurrence? GetSingle(int id)
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
         var command = connection.CreateCommand();
@@ -95,7 +97,7 @@ public class HabitOccurrenceRepository
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
 
-        using var reader = command.ExecuteReader();
+        var reader = command.ExecuteReader();
 
         if (!reader.HasRows)
         {
@@ -114,7 +116,7 @@ public class HabitOccurrenceRepository
     
     public void Update(int id, string date, int quantity)
     {
-        using var connection = new SqliteConnection(ConnectionString);
+        using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
         var command = connection.CreateCommand();
@@ -123,7 +125,7 @@ public class HabitOccurrenceRepository
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
         command.CommandText = @"UPDATE HabitOccurrences 
-                                SET OccurrenceDate = @date, Quantity = @quantity
+                                SET Date = @date, Quantity = @quantity
                                 WHERE HabitOccurrenceID = @id";
     
         command.ExecuteNonQuery();
