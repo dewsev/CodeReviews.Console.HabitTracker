@@ -75,7 +75,7 @@ class Program
     private static void AddOccurrence()
     {
         Console.Clear();
-        string date = GetDateInput($"Provide a date ({DateFormat}): ");
+        string date = GetDateInput($"Provide a date ({DateFormat} or \"now\"): ");
         int quantity = GetNumericInput("Provide quantity: ");
 
         HabitOccurrenceRepository.Insert(date, quantity);
@@ -159,6 +159,12 @@ class Program
     {
         Console.Write(message);
         string? input = Console.ReadLine();
+
+        if (input?.ToLower().Trim() == "now")
+        {
+            return DateTime.Now.ToString(DateFormat, Culture);
+        }
+        
         while (!DateTime.TryParseExact(input, DateFormat, Culture, DateTimeStyles.None, out _))
         {
             WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
