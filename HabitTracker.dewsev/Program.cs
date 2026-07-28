@@ -24,11 +24,12 @@ class Program
         Console.WriteLine("Welcome to Habit Tracker!");
         Console.WriteLine("\n1.Add new habit");
         Console.WriteLine("2.Remove habit");
-        Console.WriteLine("3.List all habits with their occurrences");
-        Console.WriteLine("4.Add new occurrence");
-        Console.WriteLine("5.Update occurrence");
-        Console.WriteLine("6.Delete occurrence");
-        Console.WriteLine("7.Exit Application\n");
+        Console.WriteLine("3.Edit habit");
+        Console.WriteLine("4.List all habits with their occurrences");
+        Console.WriteLine("5.Add new occurrence");
+        Console.WriteLine("6.Update occurrence");
+        Console.WriteLine("7.Delete occurrence");
+        Console.WriteLine("8.Exit Application\n");
         
         Console.Write("Your choice: ");
         string? choice = Console.ReadLine();
@@ -41,20 +42,23 @@ class Program
                 DeleteHabitMenu();
                 break;
             case "3":
-                ListAllHabitsWithOccurrences();
-                Console.WriteLine("\nPress any key to go back to the Main Menu.");
-                Console.ReadKey();
+                EditHabitMenu();
                 break;
             case "4":
-                AddOccurrence();
+                ListAllHabitsWithOccurrences();
+                Console.WriteLine();
+                AwaitKeyPress();
                 break;
             case "5":
-                UpdateOccurrence();
+                AddOccurrence();
                 break;
             case "6":
-                DeleteOccurrence();
+                UpdateOccurrence();
                 break;
             case "7":
+                DeleteOccurrence();
+                break;
+            case "8":
                 Environment.Exit(0);
                 break;
         }
@@ -81,9 +85,8 @@ class Program
 
 
         Console.Clear();
-        WriteColored("Habit created!", ConsoleColor.Green);
-        Console.WriteLine("\nPress any key to go back to the Main Menu.");
-        Console.ReadKey();
+        WriteColored("Habit created!\n\n", ConsoleColor.Green);
+        AwaitKeyPress();
     }
 
     private static void DeleteHabitMenu()
@@ -97,35 +100,64 @@ class Program
             Console.WriteLine("You have not created any habits yet.\n\n");
             return;
         }
+
+        int id = GetIdChoiceInput("Select a habit to delete:\n", habits);
         
-        int idChoice = -1;
-        while (habits.Any(h => h.Id == idChoice))
-        {
-            Console.Clear();
-            Console.WriteLine("Select a habit to delete:\n");
-            ListHabits(habits);
-            Console.WriteLine();
-            
-            idChoice = GetNumericInput("Your choice: ");
-        }
-        
-        HabitsRepository.Delete(idChoice);
+        HabitsRepository.Delete(id);
         
         Console.Clear();
         WriteColored("Habit successfully deleted.", ConsoleColor.Green);
-        Console.WriteLine("\n\nPress any key to go back to the Main Menu.");
-        Console.ReadKey();
+        AwaitKeyPress();
+    }
+
+    private static void EditHabitMenu()
+    {
+        Console.Clear();
+        
+        List<Habit> habits = HabitsRepository.GetAll();
+        
+        if (habits.Count == 0)
+        {
+            Console.WriteLine("You have not created any habits yet.\n");
+            AwaitKeyPress();
+            return;
+        }
+        
+        int id = GetIdChoiceInput("Select a habit to edit:\n", habits);
+        
+        Habit? habit = HabitsRepository.GetSingle(id);
+        if (habit == null)
+        {
+            WriteColored("Habit not found.", ConsoleColor.Red);
+            AwaitKeyPress();
+            return;
+        }
+        
+        Console.Clear();
+        
+        WriteColored($"Editing \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
+        Console.WriteLine("Press ENTER to keep the old value\n");
+        
+        string name = GetStringInputWithDefault($"New habit name (current: {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = GetStringInputWithDefault($"New habit name (current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+
+        Console.Clear();
+        
+        bool success = HabitsRepository.Update(id, name, unitOfMeasurement);
+        if (success)
+        {
+            WriteColored("Habit edited successfully.", ConsoleColor.Green);
+        }
+        else
+        {
+            WriteColored("Habit edit failed. Please try again.", ConsoleColor.Red);
+        }
     }
     
     private static int CreateNewHabit()
     {
-        string? name = null;
-        while (string.IsNullOrEmpty(name))
-        {
-            ClearCurrentConsoleLine();
-            Console.Write("New habit name: ");
-            name = Console.ReadLine()?.Trim();
-        }
+        // TODO: Update to use GetStringInput for unitOfMeasurement
+        string name = GetStringInput("New habit name: ");
         
         Console.WriteLine();
         
@@ -197,7 +229,7 @@ class Program
         else
         {
             string? readResult = null;
-            while (!int.TryParse(readResult, out habitId) || habits.Any(h => h.Id == habitId))
+            while (!int.TryParse(readResult, out habitId) || habits.All(h => h.Id != habitId))
             {
                 Console.Clear();
                 Console.Write("Select a habit: \n\n");
@@ -241,8 +273,7 @@ class Program
             WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
         }
         
-        Console.WriteLine("\nPress any key to go back to the Main Menu.");
-        Console.ReadKey();
+        AwaitKeyPress();
     }
     
     private static void DeleteOccurrence()
@@ -268,9 +299,33 @@ class Program
                 WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
             }
         }
-        
-        Console.WriteLine("\nPress any key to go back to Main Menu.");
-        Console.ReadKey();
+
+        AwaitKeyPress();
+    }
+
+    private static string GetStringInput(string message)
+    {
+        string? name = null;
+        while (string.IsNullOrEmpty(name))
+        {
+            ClearCurrentConsoleLine();
+            Console.Write(message);
+            name = Console.ReadLine()?.Trim();
+        }
+
+        return name;
+    }
+
+    private static string GetStringInputWithDefault(string message, string defaultValue)
+    {
+        Console.Write(message);
+        string? input = Console.ReadLine()?.Trim();
+        if (string.IsNullOrEmpty(input))
+        {
+            input = defaultValue;
+        }
+
+        return input;
     }
     
     private static int GetNumericInput(string message)
@@ -286,6 +341,22 @@ class Program
         }
 
         return numericInput;
+    }
+
+    private static int GetIdChoiceInput(string message, List<Habit> habits)
+    {
+        int id = -1;
+        while (habits.All(h => h.Id != id))
+        {
+            Console.Clear();
+            Console.WriteLine(message);
+            ListHabits(habits);
+            Console.WriteLine();
+            
+            id = GetNumericInput("Your choice: ");
+        }
+
+        return id;
     }
     
     private static string GetDateInput(string message)
@@ -323,8 +394,15 @@ class Program
     
     private static void ClearCurrentConsoleLine()
     {
-        Console.SetCursorPosition(0, Console.CursorTop);
+        int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+        Console.SetCursorPosition(0, cursorPosition);
         Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, Console.CursorTop - 1);
+        Console.SetCursorPosition(0, cursorPosition);
+    }
+
+    private static void AwaitKeyPress()
+    {
+        Console.WriteLine("Press any key to go back to the Main Menu.");
+        Console.ReadKey();
     }
 }

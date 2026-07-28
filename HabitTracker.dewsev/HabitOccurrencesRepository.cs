@@ -15,10 +15,10 @@ public class HabitOccurrencesRepository
         _dateFormat = dateFormat;
         _culture = culture;
         
-        Init();
+        CreateTable();
     }
 
-    private void Init()
+    private void CreateTable()
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -130,7 +130,7 @@ public class HabitOccurrencesRepository
         command.CommandText = @"UPDATE HabitOccurrences 
                                 SET Date = @date, Quantity = @quantity
                                 WHERE HabitOccurrenceID = @id";
-    
+        
         command.ExecuteNonQuery();
     }
 }

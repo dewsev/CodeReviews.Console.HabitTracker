@@ -54,6 +54,32 @@ public class HabitsRepository
 
         return habits;
     }
+
+    public Habit? GetSingle(int id)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        command.CommandText = "SELECT * FROM Habits WHERE HabitID = @id";
+
+        var reader = command.ExecuteReader();
+
+        if (!reader.HasRows)
+        {
+            return null;
+        }
+        
+        reader.Read();
+
+        return new Habit
+        {
+            Id = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            UnitOfMeasurement = reader.GetString(2)
+        };
+    }
     
     public int Delete(int id)
     {
@@ -83,8 +109,18 @@ public class HabitsRepository
         return insertedId;
     }
     
-    public void Update(int id, string date, int quantity)
+    public bool Update(int id, string name, string unitOfMeasurement)
     {
-        // TODO: Implement this!
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.Parameters.Add("@name", SqliteType.Text).Value = name;
+        command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
+        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        command.CommandText =
+            "UPDATE Habits SET Name = @name, UnitOfMeasurement = @unitOfMeasurement WHERE HabitID = @id";
+
+        return command.ExecuteNonQuery() == 1;
     }
 }
