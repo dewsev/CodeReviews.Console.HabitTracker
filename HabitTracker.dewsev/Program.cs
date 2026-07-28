@@ -83,7 +83,6 @@ class Program
 
         CreateNewHabit();
 
-
         Console.Clear();
         WriteColored("Habit created!\n\n", ConsoleColor.Green);
         AwaitKeyPress();
@@ -156,19 +155,9 @@ class Program
     
     private static int CreateNewHabit()
     {
-        // TODO: Update to use GetStringInput for unitOfMeasurement
         string name = GetStringInput("New habit name: ");
-        
         Console.WriteLine();
-        
-        string? unitOfMeasurement = null;
-        while (string.IsNullOrEmpty(unitOfMeasurement))
-        {
-            ClearCurrentConsoleLine();
-            Console.Write("Unit of measurement: ");
-            unitOfMeasurement = Console.ReadLine()?.Trim();
-        }
-        
+        string unitOfMeasurement = GetStringInput("Unit of measurement: ");
         return HabitsRepository.Insert(name, unitOfMeasurement);
     }
     
