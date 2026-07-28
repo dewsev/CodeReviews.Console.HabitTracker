@@ -99,7 +99,7 @@ class Program
         }
         
         int idChoice = -1;
-        while (habits.FindIndex(h => h.Id == idChoice) == -1)
+        while (habits.Any(h => h.Id == idChoice))
         {
             Console.Clear();
             Console.WriteLine("Select a habit to delete:\n");
@@ -197,7 +197,7 @@ class Program
         else
         {
             string? readResult = null;
-            while (!int.TryParse(readResult, out habitId) || habits.FindIndex(h => h.Id == habitId) == -1)
+            while (!int.TryParse(readResult, out habitId) || habits.Any(h => h.Id == habitId))
             {
                 Console.Clear();
                 Console.Write("Select a habit: \n\n");
