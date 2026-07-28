@@ -23,11 +23,12 @@ class Program
         Console.Clear();
         Console.WriteLine("Welcome to Habit Tracker!");
         Console.WriteLine("\n1.Add new habit");
-        Console.WriteLine("2.List all habits with their occurrences");
-        Console.WriteLine("3.Add new occurrence");
-        Console.WriteLine("4.Update occurrence");
-        Console.WriteLine("5.Delete occurrence");
-        Console.WriteLine("6.Exit Application\n");
+        Console.WriteLine("2.Remove habit");
+        Console.WriteLine("3.List all habits with their occurrences");
+        Console.WriteLine("4.Add new occurrence");
+        Console.WriteLine("5.Update occurrence");
+        Console.WriteLine("6.Delete occurrence");
+        Console.WriteLine("7.Exit Application\n");
         
         Console.Write("Your choice: ");
         string? choice = Console.ReadLine();
@@ -37,20 +38,23 @@ class Program
                 AddNewHabitMenu();
                 break;
             case "2":
+                DeleteHabitMenu();
+                break;
+            case "3":
                 ListAllHabitsWithOccurrences();
                 Console.WriteLine("\nPress any key to go back to the Main Menu.");
                 Console.ReadKey();
                 break;
-            case "3":
+            case "4":
                 AddOccurrence();
                 break;
-            case "4":
+            case "5":
                 UpdateOccurrence();
                 break;
-            case "5":
+            case "6":
                 DeleteOccurrence();
                 break;
-            case "6":
+            case "7":
                 Environment.Exit(0);
                 break;
         }
@@ -82,11 +86,35 @@ class Program
         Console.ReadKey();
     }
 
-    private static void ClearCurrentConsoleLine()
+    private static void DeleteHabitMenu()
     {
-        Console.SetCursorPosition(0, Console.CursorTop);
-        Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, Console.CursorTop - 1);
+        Console.Clear();
+        
+        List<Habit> habits = HabitsRepository.GetAll();
+        
+        if (habits.Count == 0)
+        {
+            Console.WriteLine("You have not created any habits yet.\n\n");
+            return;
+        }
+        
+        int idChoice = -1;
+        while (habits.FindIndex(h => h.Id == idChoice) == -1)
+        {
+            Console.Clear();
+            Console.WriteLine("Select a habit to delete:\n");
+            ListHabits(habits);
+            Console.WriteLine();
+            
+            idChoice = GetNumericInput("Your choice: ");
+        }
+        
+        HabitsRepository.Delete(idChoice);
+        
+        Console.Clear();
+        WriteColored("Habit successfully deleted.", ConsoleColor.Green);
+        Console.WriteLine("\n\nPress any key to go back to the Main Menu.");
+        Console.ReadKey();
     }
     
     private static int CreateNewHabit()
@@ -291,5 +319,12 @@ class Program
     private static string FormatDateTimeString(DateTime dateTime)
     {
         return dateTime.ToString(DateFormat, Culture);
+    }
+    
+    private static void ClearCurrentConsoleLine()
+    {
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.Write(new string(' ', Console.WindowWidth));
+        Console.SetCursorPosition(0, Console.CursorTop - 1);
     }
 }
