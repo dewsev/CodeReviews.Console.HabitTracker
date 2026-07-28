@@ -179,6 +179,12 @@ class Program
                 Console.Write($"{habit.Name}\n");
 
                 List<HabitOccurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
+
+                if (currentHabitOccurrences.Count == 0)
+                {
+                    Console.WriteLine("└── There are no occurrences logged for this habit yet.");
+                    continue;
+                }
                 
                 for (int i = 0; i < currentHabitOccurrences.Count; i++)
                 {
