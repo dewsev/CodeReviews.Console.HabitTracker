@@ -53,7 +53,8 @@ public class HabitOccurrencesRepository
             {
                 Id = reader.GetInt32(0),
                 Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
-                Quantity = reader.GetInt32(2)
+                Quantity = reader.GetInt32(2),
+                HabitId = reader.GetInt32(3)
             });
         }
   
@@ -73,7 +74,7 @@ public class HabitOccurrencesRepository
         return command.ExecuteNonQuery();
     }
     
-    public void Insert(string date, int quantity)
+    public void Insert(string date, int quantity, int habitId)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -82,7 +83,8 @@ public class HabitOccurrencesRepository
         
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
-        command.CommandText = "INSERT INTO HabitOccurrences (Date, Quantity) VALUES (@date, @quantity)";
+        command.Parameters.Add("@habitId", SqliteType.Integer).Value = habitId;
+        command.CommandText = "INSERT INTO HabitOccurrences (Date, Quantity, HabitID) VALUES (@date, @quantity, @habitId)";
     
         command.ExecuteNonQuery();
     }
@@ -110,7 +112,8 @@ public class HabitOccurrencesRepository
         {
             Id = reader.GetInt32(0),
             Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
-            Quantity = reader.GetInt32(2)
+            Quantity = reader.GetInt32(2),
+            HabitId = reader.GetInt32(3)
         };
     }
     

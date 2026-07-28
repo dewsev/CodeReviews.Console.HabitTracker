@@ -22,8 +22,8 @@ class Program
     {
         Console.Clear();
         Console.WriteLine("Welcome to Habit Tracker!");
-        Console.WriteLine("\n1.Create new habit");
-        Console.WriteLine("2.List all occurrences");
+        Console.WriteLine("\n1.Add new habit");
+        Console.WriteLine("2.List all habits with their occurrences");
         Console.WriteLine("3.Add new occurrence");
         Console.WriteLine("4.Update occurrence");
         Console.WriteLine("5.Delete occurrence");
@@ -34,10 +34,10 @@ class Program
         switch (choice)
         {
             case "1":
-                // CreateNewHabit();
+                AddNewHabitMenu();
                 break;
             case "2":
-                ListAllOccurrences();
+                ListAllHabitsWithOccurrences();
                 Console.WriteLine("\nPress any key to go back to the Main Menu.");
                 Console.ReadKey();
                 break;
@@ -55,41 +55,140 @@ class Program
                 break;
         }
     }
-    
-    private static void ListAllOccurrences()
+
+    private static void AddNewHabitMenu()
     {
         Console.Clear();
-        List<HabitOccurrence> occurrences = HabitOccurrencesRepository.GetAll();
-
-        if (occurrences.Count == 0)
+        
+        List<Habit> habits = HabitsRepository.GetAll();
+        
+        if (habits.Count > 0)
         {
-            Console.WriteLine("You have not saved any occurrences yet.");
+            Console.WriteLine("Your current habits:\n");
+            ListHabits(habits);
+            Console.WriteLine("\n");
         }
         else
         {
-            foreach (HabitOccurrence occurrence in occurrences)
+            Console.WriteLine("You have not created any habits yet.\n\n");
+        }
+
+        CreateNewHabit();
+
+
+        Console.Clear();
+        WriteColored("Habit created!", ConsoleColor.Green);
+        Console.WriteLine("\nPress any key to go back to the Main Menu.");
+        Console.ReadKey();
+    }
+
+    private static void ClearCurrentConsoleLine()
+    {
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.Write(new string(' ', Console.WindowWidth));
+        Console.SetCursorPosition(0, Console.CursorTop - 1);
+    }
+    
+    private static int CreateNewHabit()
+    {
+        string? name = null;
+        while (string.IsNullOrEmpty(name))
+        {
+            ClearCurrentConsoleLine();
+            Console.Write("New habit name: ");
+            name = Console.ReadLine()?.Trim();
+        }
+        
+        Console.WriteLine();
+        
+        string? unitOfMeasurement = null;
+        while (string.IsNullOrEmpty(unitOfMeasurement))
+        {
+            ClearCurrentConsoleLine();
+            Console.Write("Unit of measurement: ");
+            unitOfMeasurement = Console.ReadLine()?.Trim();
+        }
+        
+        return HabitsRepository.Insert(name, unitOfMeasurement);
+    }
+    
+    private static void ListAllHabitsWithOccurrences()
+    {
+        Console.Clear();
+        List<Habit> habits = HabitsRepository.GetAll();
+        List<HabitOccurrence> occurrences = HabitOccurrencesRepository.GetAll();
+
+        if (habits.Count == 0)
+        {
+            Console.WriteLine("You have not created any habits yet.");
+        }
+        else
+        {
+            foreach (Habit habit in habits)
             {
-                WriteColored($"ID: {occurrence.Id}", ConsoleColor.Cyan);
-                Console.Write(" - ");
-                WriteColored(FormatDateTimeString(occurrence.Date), ConsoleColor.Cyan);
-                Console.Write(" - ");
-                WriteColored($"Quantity: {occurrence.Quantity}\n", ConsoleColor.Cyan);
+                WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
+                Console.Write($"{habit.Name}\n");
+
+                List<HabitOccurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
+                
+                for (int i = 0; i < currentHabitOccurrences.Count; i++)
+                {
+                    HabitOccurrence occurrence = currentHabitOccurrences[i];
+                    
+                    string asciiCharacter = i == currentHabitOccurrences.Count - 1 ? "└──" : "├──";
+                    Console.Write($"{asciiCharacter} {FormatDateTimeString(occurrence.Date)}");
+                    Console.Write(" — ");
+                    Console.Write($"{occurrence.Quantity} {habit.UnitOfMeasurement}\n");
+                }
             }
+        }
+    }
+
+    private static void ListHabits(List<Habit> habits)
+    {
+        foreach (Habit habit in habits)
+        {
+            WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
+            Console.Write($"{habit.Name}\n");
         }
     }
     
     private static void AddOccurrence()
     {
         Console.Clear();
+
+        int habitId;
+        
+        List<Habit> habits = HabitsRepository.GetAll();
+        
+        if (habits.Count == 0)
+        {
+            Console.WriteLine("You have not created any habits yet.\n");
+            habitId = CreateNewHabit();
+        }
+        else
+        {
+            string? readResult = null;
+            while (!int.TryParse(readResult, out habitId) || habits.FindIndex(h => h.Id == habitId) == -1)
+            {
+                Console.Clear();
+                Console.Write("Select a habit: \n\n");
+                ListHabits(habits);
+                Console.Write("\nYour choice: ");
+                readResult = Console.ReadLine()?.Trim();
+            }    
+        }
+
+        Console.Clear();
         string date = GetDateInput($"Provide a date ({DateFormat} or \"now\"): ");
         int quantity = GetNumericInput("Provide quantity: ");
 
-        HabitOccurrencesRepository.Insert(date, quantity);
+        HabitOccurrencesRepository.Insert(date, quantity, habitId);
     }
 
     private static void UpdateOccurrence()
     {
-        ListAllOccurrences();
+        // TODO: Update this method
         Console.WriteLine();
         
         int id = GetNumericInput("Provide ID of an occurence that you want to update: ");
@@ -120,7 +219,7 @@ class Program
     
     private static void DeleteOccurrence()
     {
-        ListAllOccurrences();
+        // TODO: Update this method
         Console.WriteLine();
         
         int occurrencesCount = HabitOccurrencesRepository.GetAll().Count;
@@ -166,9 +265,10 @@ class Program
         Console.Write(message);
         string? input = Console.ReadLine();
 
+        // TODO: Empty input should return today's date
         if (input?.ToLower().Trim() == "now")
         {
-            return DateTime.Now.ToString(DateFormat, Culture);
+            return FormatDateTimeString(DateTime.Now);
         }
         
         while (!DateTime.TryParseExact(input, DateFormat, Culture, DateTimeStyles.None, out _))
