@@ -97,7 +97,7 @@ public class HabitsRepository
         return command.ExecuteNonQuery() == 1;
     }
     
-    public int Insert(string name, string unitOfMeasurement)
+    public Habit Insert(string name, string unitOfMeasurement)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -107,10 +107,18 @@ public class HabitsRepository
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
         
-        command.CommandText = "INSERT INTO Habits (Name, UnitOfMeasurement) VALUES (@name, @unitOfMeasurement) RETURNING HabitId";
+        command.CommandText = "INSERT INTO Habits (Name, UnitOfMeasurement) VALUES (@name, @unitOfMeasurement) RETURNING *";
 
-        int insertedId = Convert.ToInt32(command.ExecuteScalar()!);
-        return insertedId;
+        using var reader = command.ExecuteReader();
+
+        reader.Read();
+
+        return new Habit
+        {
+            Id = reader.GetInt32(0),
+            Name = reader.GetString(1),
+            UnitOfMeasurement = reader.GetString(2)
+        };
     }
     
     public bool Update(int id, string name, string unitOfMeasurement)
