@@ -17,7 +17,7 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
-        var createTableCommand = connection.CreateCommand();
+        using var createTableCommand = connection.CreateCommand();
         createTableCommand.CommandText =
             @"CREATE TABLE IF NOT EXISTS HabitOccurrences (
                     HabitOccurrenceID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,11 +35,11 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.CommandText = "SELECT * FROM HabitOccurrences";
 
         List<HabitOccurrence> occurrences = [];
-        var reader = command.ExecuteReader();
+        using var reader = command.ExecuteReader();
 
         while (reader.Read())
         {
@@ -60,7 +60,7 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "DELETE FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
@@ -73,7 +73,7 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
@@ -88,12 +88,12 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
 
-        var reader = command.ExecuteReader();
+        using var reader = command.ExecuteReader();
 
         if (!reader.HasRows)
         {
@@ -116,7 +116,7 @@ public class HabitOccurrencesRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
