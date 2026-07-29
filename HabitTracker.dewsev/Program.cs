@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace HabitTracker.dewsev;
+﻿namespace HabitTracker.dewsev;
 
 class Program
 {
