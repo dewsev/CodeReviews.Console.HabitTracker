@@ -1,7 +1,7 @@
 
 namespace HabitTracker.dewsev;
 
-public record HabitOccurrence
+public record Occurrence : IEntity
 {
     public required int Id { get; init; }
     public required int HabitId { get; init; }

@@ -26,12 +26,17 @@ public static class InputReader
         return string.IsNullOrEmpty(input) ? defaultValue : input;
     }
     
-    public static int GetNumeric(string message)
+    public static int GetNumeric(string message, int? defaultValue = null)
     {
         while (true)
         {
             Console.Write(message);
-            string? input = Console.ReadLine();
+            string? input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input) && defaultValue != null)
+            {
+                return defaultValue.Value;
+            }
             
             if (!string.IsNullOrEmpty(input) && int.TryParse(input, out int numericInput) && numericInput >= 0)
             {
@@ -42,15 +47,14 @@ public static class InputReader
         }
     }
     
-    public static string GetDate(string message, string format, CultureInfo culture)
+    public static string GetDate(string message, string format, CultureInfo culture, DateTime? defaultValue = null)
     {
         Console.Write(message);
         string? input = Console.ReadLine();
 
-        // TODO: Empty input should return today's date
-        if (input?.ToLower().Trim() == "now")
+        if (string.IsNullOrEmpty(input))
         {
-            return DateFormatter.FormatDateTimeString(DateTime.Now);
+            return DateFormatter.FormatDateTimeString(defaultValue ?? DateTime.Now);
         }
         
         while (!DateTime.TryParseExact(input, format, culture, DateTimeStyles.None, out _))

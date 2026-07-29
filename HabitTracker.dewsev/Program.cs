@@ -4,7 +4,7 @@ class Program
 {
     private const string DbConnectionString = "Data Source=HabitTracker.db";
     private static readonly HabitsRepository HabitsRepository = new(DbConnectionString);
-    private static readonly HabitOccurrencesRepository HabitOccurrencesRepository = new(DbConnectionString);
+    private static readonly OccurrencesRepository OccurrencesRepository = new(DbConnectionString);
     
     static void Main(string[] args)
     {
@@ -46,10 +46,10 @@ class Program
                 InputReader.AwaitAnyKeyPress();
                 break;
             case "5":
-                AddOccurrence();
+                AddOccurrenceMenu();
                 break;
             case "6":
-                UpdateOccurrence();
+                EditOccurrenceMenu();
                 break;
             case "7":
                 DeleteOccurrence();
@@ -96,7 +96,7 @@ class Program
             return;
         }
 
-        int id = GetHabitIdChoice("Select a habit to delete:", habits);
+        int id = GetIdChoice("Select a habit to delete:", habits, ListHabits);
         
         bool success = HabitsRepository.Delete(id);
 
@@ -126,7 +126,7 @@ class Program
             return;
         }
         
-        int id = GetHabitIdChoice("Select a habit to edit:", habits);
+        int id = GetIdChoice("Select a habit to edit:", habits, ListHabits);
         
         Habit? habit = HabitsRepository.GetSingle(id);
         if (habit == null)
@@ -168,7 +168,7 @@ class Program
     {
         Console.Clear();
         List<Habit> habits = HabitsRepository.GetAll();
-        List<HabitOccurrence> occurrences = HabitOccurrencesRepository.GetAll();
+        List<Occurrence> occurrences = OccurrencesRepository.GetAll();
 
         if (habits.Count == 0)
         {
@@ -181,7 +181,7 @@ class Program
                 ConsoleHelpers.WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
                 Console.Write($"{habit.Name}\n");
 
-                List<HabitOccurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
+                List<Occurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
 
                 if (currentHabitOccurrences.Count == 0)
                 {
@@ -191,7 +191,7 @@ class Program
                 
                 for (int i = 0; i < currentHabitOccurrences.Count; i++)
                 {
-                    HabitOccurrence occurrence = currentHabitOccurrences[i];
+                    Occurrence occurrence = currentHabitOccurrences[i];
                     
                     string asciiCharacter = i == currentHabitOccurrences.Count - 1 ? "└──" : "├──";
                     Console.Write($"{asciiCharacter} {DateFormatter.FormatDateTimeString(occurrence.Date)}");
@@ -211,7 +211,18 @@ class Program
         }
     }
     
-    private static void AddOccurrence()
+    private static void ListOccurrences(List<OccurrenceWithHabit> occurrences)
+    {
+        foreach (OccurrenceWithHabit occurrence in occurrences)
+        {
+            ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
+            Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
+            Console.Write(" — ");
+            Console.Write($"{occurrence.Quantity} {occurrence.UnitOfMeasurement}\n");
+        }
+    }
+    
+    private static void AddOccurrenceMenu()
     {
         Console.Clear();
 
@@ -226,43 +237,52 @@ class Program
         }
         else
         {
-            habitId = GetHabitIdChoice("Select a habit:", habits);
+            habitId = GetIdChoice("Select a habit:", habits, ListHabits);
         }
 
         Console.Clear();
         string date = InputReader.GetDate($"Provide a date ({DateFormatter.DateFormat} or \"now\"): ", DateFormatter.DateFormat, DateFormatter.Culture);
         int quantity = InputReader.GetNumeric("Provide quantity: ");
 
-        HabitOccurrencesRepository.Insert(date, quantity, habitId);
+        OccurrencesRepository.Insert(date, quantity, habitId);
     }
 
-    private static void UpdateOccurrence()
+    private static void EditOccurrenceMenu()
     {
-        // TODO: Update this method
-        Console.WriteLine();
+        List<Habit> habits = HabitsRepository.GetAll();
         
-        int id = InputReader.GetNumeric("Provide ID of an occurence that you want to update: ");
+        if (habits.Count == 0)
+        {
+            Console.WriteLine("You have not created any habits yet.\n");
+            InputReader.AwaitAnyKeyPress();
+            return;
+        }
         
-        HabitOccurrence? occurrence = HabitOccurrencesRepository.GetSingle(id);
+        int habitIdChoice = GetIdChoice("Select a habit to see occurrences:", habits, ListHabits);
+
+        List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetByHabitId(habitIdChoice);
         
         Console.Clear();
-        if (occurrence == null)
+        
+        OccurrenceWithHabit chosenOccurrence = GetEntityChoice("Select an occurrence to edit:", occurrences, ListOccurrences);
+        
+        Console.Clear();
+    
+        ConsoleHelpers.WriteColored($"Editing Occurrence with ID {chosenOccurrence.Id}...\n\n", ConsoleColor.Yellow);
+    
+        string date = InputReader.GetDate($"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", DateFormatter.DateFormat, DateFormatter.Culture, chosenOccurrence.Date);
+        int quantity = InputReader.GetNumeric($"Provide new quantity (current: {chosenOccurrence.Quantity}): ", chosenOccurrence.Quantity);
+        
+        bool success = OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
+        if (success)
         {
-            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
+            ConsoleHelpers.WriteColored("\nOccurrence successfully updated.\n\n", ConsoleColor.Green);
         }
         else
         {
-            Console.WriteLine($"Editing Occurrence with ID {occurrence.Id}\n");
-        
-            string date = InputReader.GetDate($"Provide new date (current: {DateFormatter.FormatDateTimeString(occurrence.Date)}): ", DateFormatter.DateFormat, DateFormatter.Culture);
-            int quantity = InputReader.GetNumeric($"Provide new quantity (current: {occurrence.Quantity}): ");
-        
-            HabitOccurrencesRepository.Update(id, date, quantity);
-        
-            Console.Clear();
-            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
+            ConsoleHelpers.WriteColored("\nFailed to edit occurrence. Please try again.\n\n", ConsoleColor.Red);
         }
-        
+    
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -271,13 +291,13 @@ class Program
         // TODO: Update this method
         Console.WriteLine();
         
-        int occurrencesCount = HabitOccurrencesRepository.GetAll().Count;
+        int occurrencesCount = OccurrencesRepository.GetAll().Count;
         
         if (occurrencesCount != 0)
         {
             int id = InputReader.GetNumeric("Provide ID of an occurence that you want to delete: ");
 
-            int deletedCount = HabitOccurrencesRepository.Delete(id);
+            int deletedCount = OccurrencesRepository.Delete(id);
 
             Console.Clear();
             if (deletedCount == 0)
@@ -293,20 +313,40 @@ class Program
         InputReader.AwaitAnyKeyPress();
     }
     
-    public static int GetHabitIdChoice(string message, List<Habit> habits)
+    private static int GetIdChoice<T>(string message, List<T> entities, Action<List<T>> displayDelegate) where T : IEntity
     {
         while (true)
         {
             Console.Clear();
             Console.WriteLine($"{message}\n");
-            ListHabits(habits);
+            // ListHabits(habits);
+            displayDelegate(entities);
             Console.WriteLine();
             
             int id = InputReader.GetNumeric("Your choice: ");
             
-            if (habits.Any(h => h.Id == id))
+            if (entities.Any(e => e.Id == id))
             {
                 return id;
+            }
+        }
+    }
+    
+    private static T GetEntityChoice<T>(string message, List<T> entities, Action<List<T>> displayDelegate) where T : IEntity
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine($"{message}\n");
+            displayDelegate(entities);
+            Console.WriteLine();
+            
+            int id = InputReader.GetNumeric("Your choice: ");
+
+            var chosenEntity = entities.Find(e => e.Id == id);
+            if (chosenEntity != null)
+            {
+                return chosenEntity;
             }
         }
     }
