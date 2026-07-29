@@ -83,7 +83,7 @@ public class HabitsRepository
         };
     }
     
-    public bool Delete(int id)
+    public void Delete(int id)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -94,7 +94,7 @@ public class HabitsRepository
         
         command.CommandText = "DELETE FROM Habits WHERE HabitID = @id";
         
-        return command.ExecuteNonQuery() == 1;
+        command.ExecuteNonQuery();
     }
     
     public Habit Insert(string name, string unitOfMeasurement)
@@ -121,7 +121,7 @@ public class HabitsRepository
         };
     }
     
-    public bool Update(int id, string name, string unitOfMeasurement)
+    public void Update(int id, string name, string unitOfMeasurement)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -135,6 +135,6 @@ public class HabitsRepository
         command.CommandText =
             "UPDATE Habits SET Name = @name, UnitOfMeasurement = @unitOfMeasurement WHERE HabitID = @id";
 
-        return command.ExecuteNonQuery() == 1;
+        command.ExecuteNonQuery();
     }
 }

@@ -8,4 +8,12 @@ public static class ConsoleHelpers
         Console.Write(message);
         Console.ResetColor();
     }
+    
+    public static void ClearCurrentConsoleLine()
+    {
+        int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
+        Console.SetCursorPosition(0, cursorPosition);
+        Console.Write(new string(' ', Console.WindowWidth));
+        Console.SetCursorPosition(0, cursorPosition);
+    }
 }

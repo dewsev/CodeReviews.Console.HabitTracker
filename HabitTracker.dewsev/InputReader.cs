@@ -4,26 +4,25 @@ namespace HabitTracker.dewsev;
 
 public static class InputReader
 {
-    public static string GetString(string message)
+    public static string GetString(string message, string? defaultValue = null)
     {
         while (true)
         {
             Console.Write(message);
-            string? name = Console.ReadLine()?.Trim();
-            if (!string.IsNullOrEmpty(name))
+            string? input = Console.ReadLine()?.Trim();
+            
+            if (defaultValue != null && string.IsNullOrEmpty(input))
             {
-                return name;
+                return defaultValue;
             }
             
-            ClearCurrentConsoleLine();
+            if (!string.IsNullOrEmpty(input))
+            {
+                return input;
+            }
+            
+            ConsoleHelpers.ClearCurrentConsoleLine();
         }
-    }
-    
-    public static string GetStringWithDefault(string message, string defaultValue)
-    {
-        Console.Write(message);
-        string? input = Console.ReadLine()?.Trim();
-        return string.IsNullOrEmpty(input) ? defaultValue : input;
     }
     
     public static int GetNumeric(string message, int? defaultValue = null)
@@ -33,7 +32,7 @@ public static class InputReader
             Console.Write(message);
             string? input = Console.ReadLine()?.Trim();
 
-            if (string.IsNullOrEmpty(input) && defaultValue != null)
+            if (defaultValue != null && string.IsNullOrEmpty(input))
             {
                 return defaultValue.Value;
             }
@@ -43,7 +42,7 @@ public static class InputReader
                 return numericInput;
             }
             
-            ClearCurrentConsoleLine();
+            ConsoleHelpers.ClearCurrentConsoleLine();
         }
     }
     
@@ -71,13 +70,5 @@ public static class InputReader
     {
         Console.WriteLine("Press any key to go back to the Main Menu.");
         Console.ReadKey();
-    }
-    
-    private static void ClearCurrentConsoleLine()
-    {
-        int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-        Console.SetCursorPosition(0, cursorPosition);
-        Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, cursorPosition);
     }
 }

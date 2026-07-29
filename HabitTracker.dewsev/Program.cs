@@ -18,14 +18,14 @@ class Program
     {
         Console.Clear();
         Console.WriteLine("Welcome to Habit Tracker!");
-        Console.WriteLine("\n1.Add new habit");
-        Console.WriteLine("2.Remove habit");
-        Console.WriteLine("3.Edit habit");
-        Console.WriteLine("4.List all habits with their occurrences");
-        Console.WriteLine("5.Add new occurrence");
-        Console.WriteLine("6.Update occurrence");
-        Console.WriteLine("7.Delete occurrence");
-        Console.WriteLine("8.Exit Application\n");
+        Console.WriteLine("\n1.Add a habit");
+        Console.WriteLine("2.Delete a habit");
+        Console.WriteLine("3.Edit a habit");
+        Console.WriteLine("4.List all habits and their occurrences");
+        Console.WriteLine("5.Add an occurrence");
+        Console.WriteLine("6.Edit an occurrence");
+        Console.WriteLine("7.Delete an occurrence");
+        Console.WriteLine("8.Exit application\n");
         
         Console.Write("Your choice: ");
         string? choice = Console.ReadLine();
@@ -79,8 +79,7 @@ class Program
 
         CreateNewHabit();
 
-        Console.Clear();
-        ConsoleHelpers.WriteColored("Habit created!\n\n", ConsoleColor.Green);
+        ConsoleHelpers.WriteColored("\nHabit created!\n\n", ConsoleColor.Green);
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -98,18 +97,9 @@ class Program
 
         Habit habit = GetEntityChoice("Select a habit to delete:", habits, ListHabits);
         
-        bool success = HabitsRepository.Delete(habit.Id);
+        HabitsRepository.Delete(habit.Id);
 
-        Console.Clear();
-        if (success)
-        {
-            ConsoleHelpers.WriteColored("Habit successfully deleted.\n\n", ConsoleColor.Green);
-        }
-        else
-        {
-            ConsoleHelpers.WriteColored("Failed to delete. Please try again.\n\n", ConsoleColor.Red);
-        }
-        
+        ConsoleHelpers.WriteColored("\nHabit deleted.\n\n", ConsoleColor.Green);
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -130,23 +120,15 @@ class Program
         
         Console.Clear();
         
-        ConsoleHelpers.WriteColored($"Editing \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-        Console.WriteLine("Press ENTER to keep the old value\n");
+        ConsoleHelpers.WriteColored($"Editing habit \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
-        string name = InputReader.GetStringWithDefault($"New habit name (current: {habit.Name}): ", habit.Name);
-        string unitOfMeasurement = InputReader.GetStringWithDefault($"New habit name (current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+        string name = InputReader.GetString($"New habit name (current: {habit.Name}, leave empty to keep current): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetString($"New unit of measurement (current: {habit.UnitOfMeasurement}, leave empty to keep current): ", habit.UnitOfMeasurement);
 
-        Console.Clear();
+        HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
         
-        bool success = HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
-        if (success)
-        {
-            ConsoleHelpers.WriteColored("Habit edited successfully.", ConsoleColor.Green);
-        }
-        else
-        {
-            ConsoleHelpers.WriteColored("Habit edit failed. Please try again.", ConsoleColor.Red);
-        }
+        ConsoleHelpers.WriteColored("\nHabit edited.\n\n", ConsoleColor.Green);
+        InputReader.AwaitAnyKeyPress();
     }
     
     private static Habit CreateNewHabit()
@@ -233,16 +215,20 @@ class Program
         }
 
         Console.Clear();
+        ConsoleHelpers.WriteColored($"Adding an occurrence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
         string date = InputReader.GetDate(
-            $"Provide a date ({DateFormatter.DateFormat} or \"now\"): ", 
-            DateFormatter.DateFormat, 
+            $"Provide a date ({DateFormatter.DateFormat} or leave empty for today's date): ", 
+            DateFormatter.DateFormat,
             DateFormatter.Culture
             );
         
         int quantity = InputReader.GetNumeric("Provide quantity: ");
 
         OccurrencesRepository.Insert(date, quantity, habit.Id);
+        
+        ConsoleHelpers.WriteColored("\nOccurrence added.\n\n", ConsoleColor.Green);
+        InputReader.AwaitAnyKeyPress();
     }
 
     private static void EditOccurrenceMenu()
@@ -255,41 +241,36 @@ class Program
             InputReader.AwaitAnyKeyPress();
             return;
         }
-        
-        Habit habit = GetEntityChoice("Select a habit to see occurrences:", habits, ListHabits);
 
+        Console.Clear();
+        Habit habit = GetEntityChoice("Select a habit:", habits, ListHabits);
+
+        Console.Clear();
         List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
-        Console.Clear();
+        ConsoleHelpers.WriteColored($"Editing an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
         OccurrenceWithHabit chosenOccurrence = GetEntityChoice("Select an occurrence to edit:", occurrences, ListOccurrences);
         
         Console.Clear();
     
-        ConsoleHelpers.WriteColored($"Editing Occurrence with ID {chosenOccurrence.Id}...\n\n", ConsoleColor.Yellow);
+        ConsoleHelpers.WriteColored($"Editing Occurrence with ID {chosenOccurrence.Id} for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
     
         string date = InputReader.GetDate(
-            $"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", 
+            $"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}, leave empty to keep current): ", 
             DateFormatter.DateFormat, 
             DateFormatter.Culture, 
             chosenOccurrence.Date
             );
         
         int quantity = InputReader.GetNumeric(
-            $"Provide new quantity (current: {chosenOccurrence.Quantity}): ",
+            $"Provide new quantity (current: {chosenOccurrence.Quantity}, leave empty to keep current): ",
             chosenOccurrence.Quantity
             );
         
-        bool success = OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
-        if (success)
-        {
-            ConsoleHelpers.WriteColored("\nOccurrence successfully updated.\n\n", ConsoleColor.Green);
-        }
-        else
-        {
-            ConsoleHelpers.WriteColored("\nFailed to edit occurrence. Please try again.\n\n", ConsoleColor.Red);
-        }
-    
+        OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
+        
+        ConsoleHelpers.WriteColored("\nOccurrence updated.\n\n", ConsoleColor.Green);
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -324,7 +305,6 @@ class Program
     {
         while (true)
         {
-            Console.Clear();
             Console.WriteLine($"{message}\n");
             displayDelegate(entities);
             Console.WriteLine();
