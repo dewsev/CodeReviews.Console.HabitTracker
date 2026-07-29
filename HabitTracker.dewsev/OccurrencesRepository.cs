@@ -57,7 +57,7 @@ public class OccurrencesRepository
         return occurrences;
     }
     
-    public List<OccurrenceWithHabit> GetByHabitId(int habitId)
+    public List<OccurrenceWithHabit> GetAllByHabitId(int habitId)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();

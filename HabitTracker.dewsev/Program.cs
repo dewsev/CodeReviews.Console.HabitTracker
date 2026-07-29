@@ -252,7 +252,7 @@ class Program
         
         Habit habit = GetEntityChoice("Select a habit to see occurrences:", habits, ListHabits);
 
-        List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetByHabitId(habit.Id);
+        List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
         Console.Clear();
         
