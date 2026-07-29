@@ -81,7 +81,7 @@ public class HabitsRepository
         };
     }
     
-    public int Delete(int id)
+    public bool Delete(int id)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -91,7 +91,7 @@ public class HabitsRepository
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "DELETE FROM Habits WHERE HabitID = @id";
         
-        return command.ExecuteNonQuery();
+        return command.ExecuteNonQuery() == 1;
     }
     
     public int Insert(string name, string unitOfMeasurement)

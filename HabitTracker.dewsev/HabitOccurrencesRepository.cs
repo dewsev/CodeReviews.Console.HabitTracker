@@ -6,15 +6,10 @@ namespace HabitTracker.dewsev;
 public class HabitOccurrencesRepository
 {
     private readonly string _connectionString;
-    private readonly string _dateFormat;
-    private readonly CultureInfo _culture;
     
-    public HabitOccurrencesRepository(string connectionString, string dateFormat, CultureInfo culture)
+    public HabitOccurrencesRepository(string connectionString)
     {
         _connectionString = connectionString;
-        _dateFormat = dateFormat;
-        _culture = culture;
-        
         CreateTable();
     }
 
@@ -52,7 +47,7 @@ public class HabitOccurrencesRepository
             occurrences.Add(new HabitOccurrence
             {
                 Id = reader.GetInt32(0),
-                Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
+                Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
                 Quantity = reader.GetInt32(2),
                 HabitId = reader.GetInt32(3)
             });
@@ -111,7 +106,7 @@ public class HabitOccurrencesRepository
         return new HabitOccurrence
         {
             Id = reader.GetInt32(0),
-            Date = DateTime.ParseExact(reader.GetString(1), _dateFormat, _culture),
+            Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
             Quantity = reader.GetInt32(2),
             HabitId = reader.GetInt32(3)
         };

@@ -5,10 +5,8 @@ namespace HabitTracker.dewsev;
 class Program
 {
     private const string DbConnectionString = "Data Source=HabitTracker.db";
-    private const string DateFormat = "dd-MM-yyyy";
-    private static readonly CultureInfo Culture = new("en-US");
     private static readonly HabitsRepository HabitsRepository = new(DbConnectionString);
-    private static readonly HabitOccurrencesRepository HabitOccurrencesRepository = new(DbConnectionString, DateFormat, Culture);
+    private static readonly HabitOccurrencesRepository HabitOccurrencesRepository = new(DbConnectionString);
     
     static void Main(string[] args)
     {
@@ -47,7 +45,7 @@ class Program
             case "4":
                 ListAllHabitsWithOccurrences();
                 Console.WriteLine();
-                AwaitKeyPress();
+                InputReader.AwaitAnyKeyPress();
                 break;
             case "5":
                 AddOccurrence();
@@ -74,7 +72,7 @@ class Program
         {
             Console.WriteLine("Your current habits:\n");
             ListHabits(habits);
-            Console.WriteLine("\n");
+            Console.WriteLine();
         }
         else
         {
@@ -84,8 +82,8 @@ class Program
         CreateNewHabit();
 
         Console.Clear();
-        WriteColored("Habit created!\n\n", ConsoleColor.Green);
-        AwaitKeyPress();
+        ConsoleHelpers.WriteColored("Habit created!\n\n", ConsoleColor.Green);
+        InputReader.AwaitAnyKeyPress();
     }
 
     private static void DeleteHabitMenu()
@@ -100,13 +98,21 @@ class Program
             return;
         }
 
-        int id = GetIdChoiceInput("Select a habit to delete:\n", habits);
+        int id = GetHabitIdChoice("Select a habit to delete:", habits);
         
-        HabitsRepository.Delete(id);
-        
+        bool success = HabitsRepository.Delete(id);
+
         Console.Clear();
-        WriteColored("Habit successfully deleted.", ConsoleColor.Green);
-        AwaitKeyPress();
+        if (success)
+        {
+            ConsoleHelpers.WriteColored("Habit successfully deleted.\n\n", ConsoleColor.Green);
+        }
+        else
+        {
+            ConsoleHelpers.WriteColored("Failed to delete. Please try again.\n\n", ConsoleColor.Red);
+        }
+        
+        InputReader.AwaitAnyKeyPress();
     }
 
     private static void EditHabitMenu()
@@ -118,46 +124,45 @@ class Program
         if (habits.Count == 0)
         {
             Console.WriteLine("You have not created any habits yet.\n");
-            AwaitKeyPress();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
         
-        int id = GetIdChoiceInput("Select a habit to edit:\n", habits);
+        int id = GetHabitIdChoice("Select a habit to edit:", habits);
         
         Habit? habit = HabitsRepository.GetSingle(id);
         if (habit == null)
         {
-            WriteColored("Habit not found.", ConsoleColor.Red);
-            AwaitKeyPress();
+            ConsoleHelpers.WriteColored("Habit not found.", ConsoleColor.Red);
+            InputReader.AwaitAnyKeyPress();
             return;
         }
         
         Console.Clear();
         
-        WriteColored($"Editing \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
+        ConsoleHelpers.WriteColored($"Editing \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         Console.WriteLine("Press ENTER to keep the old value\n");
         
-        string name = GetStringInputWithDefault($"New habit name (current: {habit.Name}): ", habit.Name);
-        string unitOfMeasurement = GetStringInputWithDefault($"New habit name (current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+        string name = InputReader.GetStringWithDefault($"New habit name (current: {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetStringWithDefault($"New habit name (current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
 
         Console.Clear();
         
         bool success = HabitsRepository.Update(id, name, unitOfMeasurement);
         if (success)
         {
-            WriteColored("Habit edited successfully.", ConsoleColor.Green);
+            ConsoleHelpers.WriteColored("Habit edited successfully.", ConsoleColor.Green);
         }
         else
         {
-            WriteColored("Habit edit failed. Please try again.", ConsoleColor.Red);
+            ConsoleHelpers.WriteColored("Habit edit failed. Please try again.", ConsoleColor.Red);
         }
     }
     
     private static int CreateNewHabit()
     {
-        string name = GetStringInput("New habit name: ");
-        Console.WriteLine();
-        string unitOfMeasurement = GetStringInput("Unit of measurement: ");
+        string name = InputReader.GetString("New habit name: ");
+        string unitOfMeasurement = InputReader.GetString("Unit of measurement: ");
         return HabitsRepository.Insert(name, unitOfMeasurement);
     }
     
@@ -175,7 +180,7 @@ class Program
         {
             foreach (Habit habit in habits)
             {
-                WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
+                ConsoleHelpers.WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
                 Console.Write($"{habit.Name}\n");
 
                 List<HabitOccurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
@@ -191,7 +196,7 @@ class Program
                     HabitOccurrence occurrence = currentHabitOccurrences[i];
                     
                     string asciiCharacter = i == currentHabitOccurrences.Count - 1 ? "└──" : "├──";
-                    Console.Write($"{asciiCharacter} {FormatDateTimeString(occurrence.Date)}");
+                    Console.Write($"{asciiCharacter} {DateFormatter.FormatDateTimeString(occurrence.Date)}");
                     Console.Write(" — ");
                     Console.Write($"{occurrence.Quantity} {habit.UnitOfMeasurement}\n");
                 }
@@ -203,7 +208,7 @@ class Program
     {
         foreach (Habit habit in habits)
         {
-            WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
+            ConsoleHelpers.WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
             Console.Write($"{habit.Name}\n");
         }
     }
@@ -223,20 +228,12 @@ class Program
         }
         else
         {
-            string? readResult = null;
-            while (!int.TryParse(readResult, out habitId) || habits.All(h => h.Id != habitId))
-            {
-                Console.Clear();
-                Console.Write("Select a habit: \n\n");
-                ListHabits(habits);
-                Console.Write("\nYour choice: ");
-                readResult = Console.ReadLine()?.Trim();
-            }    
+            habitId = GetHabitIdChoice("Select a habit:", habits);
         }
 
         Console.Clear();
-        string date = GetDateInput($"Provide a date ({DateFormat} or \"now\"): ");
-        int quantity = GetNumericInput("Provide quantity: ");
+        string date = InputReader.GetDate($"Provide a date ({DateFormatter.DateFormat} or \"now\"): ", DateFormatter.DateFormat, DateFormatter.Culture);
+        int quantity = InputReader.GetNumeric("Provide quantity: ");
 
         HabitOccurrencesRepository.Insert(date, quantity, habitId);
     }
@@ -246,29 +243,29 @@ class Program
         // TODO: Update this method
         Console.WriteLine();
         
-        int id = GetNumericInput("Provide ID of an occurence that you want to update: ");
+        int id = InputReader.GetNumeric("Provide ID of an occurence that you want to update: ");
         
         HabitOccurrence? occurrence = HabitOccurrencesRepository.GetSingle(id);
         
         Console.Clear();
         if (occurrence == null)
         {
-            WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
+            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
         }
         else
         {
             Console.WriteLine($"Editing Occurrence with ID {occurrence.Id}\n");
         
-            string date = GetDateInput($"Provide new date (current: {FormatDateTimeString(occurrence.Date)}): ");
-            int quantity = GetNumericInput($"Provide new quantity (current: {occurrence.Quantity}): ");
+            string date = InputReader.GetDate($"Provide new date (current: {DateFormatter.FormatDateTimeString(occurrence.Date)}): ", DateFormatter.DateFormat, DateFormatter.Culture);
+            int quantity = InputReader.GetNumeric($"Provide new quantity (current: {occurrence.Quantity}): ");
         
             HabitOccurrencesRepository.Update(id, date, quantity);
         
             Console.Clear();
-            WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
+            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully updated.\n", ConsoleColor.Green);
         }
         
-        AwaitKeyPress();
+        InputReader.AwaitAnyKeyPress();
     }
     
     private static void DeleteOccurrence()
@@ -280,124 +277,39 @@ class Program
         
         if (occurrencesCount != 0)
         {
-            int id = GetNumericInput("Provide ID of an occurence that you want to delete: ");
+            int id = InputReader.GetNumeric("Provide ID of an occurence that you want to delete: ");
 
             int deletedCount = HabitOccurrencesRepository.Delete(id);
 
             Console.Clear();
             if (deletedCount == 0)
             {
-                WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
+                ConsoleHelpers.WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
             }
             else
             {
-                WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
+                ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
             }
         }
 
-        AwaitKeyPress();
-    }
-
-    private static string GetStringInput(string message)
-    {
-        string? name = null;
-        while (string.IsNullOrEmpty(name))
-        {
-            ClearCurrentConsoleLine();
-            Console.Write(message);
-            name = Console.ReadLine()?.Trim();
-        }
-
-        return name;
-    }
-
-    private static string GetStringInputWithDefault(string message, string defaultValue)
-    {
-        Console.Write(message);
-        string? input = Console.ReadLine()?.Trim();
-        if (string.IsNullOrEmpty(input))
-        {
-            input = defaultValue;
-        }
-
-        return input;
+        InputReader.AwaitAnyKeyPress();
     }
     
-    private static int GetNumericInput(string message)
+    public static int GetHabitIdChoice(string message, List<Habit> habits)
     {
-        Console.Write(message);
-        string? input = Console.ReadLine();
-        int numericInput;
-        while (string.IsNullOrEmpty(input) || !int.TryParse(input, out numericInput) || Convert.ToInt32(input) < 0)
-        {
-            WriteColored("That's not a valid number. Try again.", ConsoleColor.Red);
-            Console.Write($"\n{message}");
-            input = Console.ReadLine();
-        }
-
-        return numericInput;
-    }
-
-    private static int GetIdChoiceInput(string message, List<Habit> habits)
-    {
-        int id = -1;
-        while (habits.All(h => h.Id != id))
+        while (true)
         {
             Console.Clear();
-            Console.WriteLine(message);
+            Console.WriteLine($"{message}\n");
             ListHabits(habits);
             Console.WriteLine();
             
-            id = GetNumericInput("Your choice: ");
+            int id = InputReader.GetNumeric("Your choice: ");
+            
+            if (habits.Any(h => h.Id == id))
+            {
+                return id;
+            }
         }
-
-        return id;
-    }
-    
-    private static string GetDateInput(string message)
-    {
-        Console.Write(message);
-        string? input = Console.ReadLine();
-
-        // TODO: Empty input should return today's date
-        if (input?.ToLower().Trim() == "now")
-        {
-            return FormatDateTimeString(DateTime.Now);
-        }
-        
-        while (!DateTime.TryParseExact(input, DateFormat, Culture, DateTimeStyles.None, out _))
-        {
-            WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
-            Console.Write(message);
-            input = Console.ReadLine();
-        }
-
-        return input;
-    }
-    
-    private static void WriteColored(string message, ConsoleColor color)
-    {
-        Console.ForegroundColor = color;
-        Console.Write(message);
-        Console.ResetColor();
-    }
-    
-    private static string FormatDateTimeString(DateTime dateTime)
-    {
-        return dateTime.ToString(DateFormat, Culture);
-    }
-    
-    private static void ClearCurrentConsoleLine()
-    {
-        int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;
-        Console.SetCursorPosition(0, cursorPosition);
-        Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, cursorPosition);
-    }
-
-    private static void AwaitKeyPress()
-    {
-        Console.WriteLine("Press any key to go back to the Main Menu.");
-        Console.ReadKey();
     }
 }
