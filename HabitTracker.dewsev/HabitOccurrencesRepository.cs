@@ -18,6 +18,7 @@ public class HabitOccurrencesRepository
         connection.Open();
         
         using var createTableCommand = connection.CreateCommand();
+        
         createTableCommand.CommandText =
             @"CREATE TABLE IF NOT EXISTS HabitOccurrences (
                     HabitOccurrenceID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,6 +37,7 @@ public class HabitOccurrencesRepository
         connection.Open();
             
         using var command = connection.CreateCommand();
+        
         command.CommandText = "SELECT * FROM HabitOccurrences";
 
         List<HabitOccurrence> occurrences = [];
@@ -63,6 +65,7 @@ public class HabitOccurrencesRepository
         using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        
         command.CommandText = "DELETE FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
         
         return command.ExecuteNonQuery();
@@ -78,6 +81,7 @@ public class HabitOccurrencesRepository
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
         command.Parameters.Add("@habitId", SqliteType.Integer).Value = habitId;
+        
         command.CommandText = "INSERT INTO HabitOccurrences (Date, Quantity, HabitID) VALUES (@date, @quantity, @habitId)";
     
         command.ExecuteNonQuery();
@@ -91,6 +95,7 @@ public class HabitOccurrencesRepository
         using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        
         command.CommandText = "SELECT * FROM HabitOccurrences WHERE HabitOccurrenceID = @id";
 
         using var reader = command.ExecuteReader();
@@ -121,6 +126,7 @@ public class HabitOccurrencesRepository
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.Parameters.Add("@date", SqliteType.Text).Value = date;
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
+        
         command.CommandText = @"UPDATE HabitOccurrences 
                                 SET Date = @date, Quantity = @quantity
                                 WHERE HabitOccurrenceID = @id";

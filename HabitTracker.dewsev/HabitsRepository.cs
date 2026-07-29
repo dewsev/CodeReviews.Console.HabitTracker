@@ -18,6 +18,7 @@ public class HabitsRepository
         connection.Open();
             
         using var command = connection.CreateCommand();
+        
         command.CommandText =
             @"CREATE TABLE IF NOT EXISTS Habits (
                     HabitID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,7 +61,9 @@ public class HabitsRepository
         connection.Open();
 
         using var command = connection.CreateCommand();
+        
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        
         command.CommandText = "SELECT * FROM Habits WHERE HabitID = @id";
 
         using var reader = command.ExecuteReader();
@@ -88,6 +91,7 @@ public class HabitsRepository
         using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        
         command.CommandText = "DELETE FROM Habits WHERE HabitID = @id";
         
         return command.ExecuteNonQuery() == 1;
@@ -102,6 +106,7 @@ public class HabitsRepository
         
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
+        
         command.CommandText = "INSERT INTO Habits (Name, UnitOfMeasurement) VALUES (@name, @unitOfMeasurement) RETURNING HabitId";
 
         int insertedId = Convert.ToInt32(command.ExecuteScalar()!);
@@ -114,9 +119,11 @@ public class HabitsRepository
         connection.Open();
 
         using var command = connection.CreateCommand();
+        
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+        
         command.CommandText =
             "UPDATE Habits SET Name = @name, UnitOfMeasurement = @unitOfMeasurement WHERE HabitID = @id";
 
