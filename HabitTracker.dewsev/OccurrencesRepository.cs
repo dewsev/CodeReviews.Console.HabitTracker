@@ -95,7 +95,7 @@ public class OccurrencesRepository
         return occurrences;
     }
     
-    public int Delete(int id)
+    public void Delete(int id)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -106,7 +106,7 @@ public class OccurrencesRepository
         
         command.CommandText = "DELETE FROM Occurrences WHERE OccurrenceID = @id";
         
-        return command.ExecuteNonQuery();
+        command.ExecuteNonQuery();
     }
     
     public void Insert(string date, int quantity, int habitId)
@@ -124,37 +124,8 @@ public class OccurrencesRepository
     
         command.ExecuteNonQuery();
     }
-
-    public Occurrence? GetSingle(int id)
-    {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
-        
-        using var command = connection.CreateCommand();
-        
-        command.Parameters.Add("@id", SqliteType.Integer).Value = id;
-        
-        command.CommandText = "SELECT * FROM Occurrences WHERE OccurrenceID = @id";
-
-        using var reader = command.ExecuteReader();
-
-        if (!reader.HasRows)
-        {
-            return null;
-        }
-
-        reader.Read();
-            
-        return new Occurrence
-        {
-            Id = reader.GetInt32(0),
-            Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
-            Quantity = reader.GetInt32(2),
-            HabitId = reader.GetInt32(3)
-        };
-    }
     
-    public bool Update(int id, string date, int quantity)
+    public void Update(int id, string date, int quantity)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -169,6 +140,6 @@ public class OccurrencesRepository
                                 SET Date = @date, Quantity = @quantity
                                 WHERE OccurrenceID = @id";
         
-        return command.ExecuteNonQuery() == 1;
+        command.ExecuteNonQuery();
     }
 }

@@ -122,8 +122,8 @@ class Program
         
         ConsoleHelpers.WriteColored($"Editing habit \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
-        string name = InputReader.GetString($"New habit name (current: {habit.Name}, leave empty to keep current): ", habit.Name);
-        string unitOfMeasurement = InputReader.GetString($"New unit of measurement (current: {habit.UnitOfMeasurement}, leave empty to keep current): ", habit.UnitOfMeasurement);
+        string name = InputReader.GetString($"New habit name (press ENTER to keep current: {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetString($"New unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
 
         HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
         
@@ -257,14 +257,14 @@ class Program
         ConsoleHelpers.WriteColored($"Editing Occurrence with ID {chosenOccurrence.Id} for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
     
         string date = InputReader.GetDate(
-            $"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}, leave empty to keep current): ", 
+            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", 
             DateFormatter.DateFormat, 
             DateFormatter.Culture, 
             chosenOccurrence.Date
             );
         
         int quantity = InputReader.GetNumeric(
-            $"Provide new quantity (current: {chosenOccurrence.Quantity}, leave empty to keep current): ",
+            $"Provide new quantity (press ENTER to keep current: {chosenOccurrence.Quantity}): ",
             chosenOccurrence.Quantity
             );
         
@@ -285,17 +285,9 @@ class Program
         {
             int id = InputReader.GetNumeric("Provide ID of an occurence that you want to delete: ");
 
-            int deletedCount = OccurrencesRepository.Delete(id);
+            OccurrencesRepository.Delete(id);
 
-            Console.Clear();
-            if (deletedCount == 0)
-            {
-                ConsoleHelpers.WriteColored($"Occurrence with ID {id} was not found.", ConsoleColor.Red);
-            }
-            else
-            {
-                ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
-            }
+            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
         }
 
         InputReader.AwaitAnyKeyPress();
