@@ -10,23 +10,23 @@ public class HabitsRepository
     {
         _connectionString = connectionString;
         
-        Init();
+        CreateTable();
     }
 
-    private void Init()
+    private void CreateTable()
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
-        var createTableCommand = connection.CreateCommand();
-        createTableCommand.CommandText =
+        using var command = connection.CreateCommand();
+        command.CommandText =
             @"CREATE TABLE IF NOT EXISTS Habits (
                     HabitID INTEGER PRIMARY KEY AUTOINCREMENT,
                     Name TEXT NOT NULL,
                     UnitOfMeasurement TEXT NOT NULL
                     )";
 
-        createTableCommand.ExecuteNonQuery();
+        command.ExecuteNonQuery();
     }
     
     public List<Habit> GetAll()
@@ -34,11 +34,11 @@ public class HabitsRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
 
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
 
         command.CommandText = "SELECT * FROM Habits";
 
-        var reader = command.ExecuteReader();
+        using var reader = command.ExecuteReader();
 
         List<Habit> habits = [];
         
@@ -60,11 +60,11 @@ public class HabitsRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
 
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "SELECT * FROM Habits WHERE HabitID = @id";
 
-        var reader = command.ExecuteReader();
+        using var reader = command.ExecuteReader();
 
         if (!reader.HasRows)
         {
@@ -86,7 +86,7 @@ public class HabitsRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
             
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
         command.CommandText = "DELETE FROM Habits WHERE HabitID = @id";
@@ -99,7 +99,7 @@ public class HabitsRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
         
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
@@ -114,7 +114,7 @@ public class HabitsRepository
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
 
-        var command = connection.CreateCommand();
+        using var command = connection.CreateCommand();
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
