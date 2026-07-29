@@ -73,7 +73,7 @@ public class OccurrencesRepository
                                        H.UnitOfMeasurement,
                                        H.Name AS HabitName
                                 FROM Occurrences O
-                                LEFT JOIN Habits H 
+                                JOIN Habits H 
                                 ON O.HabitID = H.HabitID WHERE O.HabitID = @habitId";
 
         List<OccurrenceWithHabit> occurrences = [];
