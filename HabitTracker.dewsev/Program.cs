@@ -233,7 +233,13 @@ class Program
         }
 
         Console.Clear();
-        string date = InputReader.GetDate($"Provide a date ({DateFormatter.DateFormat} or \"now\"): ", DateFormatter.DateFormat, DateFormatter.Culture);
+        
+        string date = InputReader.GetDate(
+            $"Provide a date ({DateFormatter.DateFormat} or \"now\"): ", 
+            DateFormatter.DateFormat, 
+            DateFormatter.Culture
+            );
+        
         int quantity = InputReader.GetNumeric("Provide quantity: ");
 
         OccurrencesRepository.Insert(date, quantity, habit.Id);
@@ -262,8 +268,17 @@ class Program
     
         ConsoleHelpers.WriteColored($"Editing Occurrence with ID {chosenOccurrence.Id}...\n\n", ConsoleColor.Yellow);
     
-        string date = InputReader.GetDate($"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", DateFormatter.DateFormat, DateFormatter.Culture, chosenOccurrence.Date);
-        int quantity = InputReader.GetNumeric($"Provide new quantity (current: {chosenOccurrence.Quantity}): ", chosenOccurrence.Quantity);
+        string date = InputReader.GetDate(
+            $"Provide new date (current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", 
+            DateFormatter.DateFormat, 
+            DateFormatter.Culture, 
+            chosenOccurrence.Date
+            );
+        
+        int quantity = InputReader.GetNumeric(
+            $"Provide new quantity (current: {chosenOccurrence.Quantity}): ",
+            chosenOccurrence.Quantity
+            );
         
         bool success = OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
         if (success)
