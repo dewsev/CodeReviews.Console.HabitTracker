@@ -46,6 +46,27 @@ public static class InputReader
         }
     }
     
+    public static int? GetNumericNullable(string message)
+    {
+        while (true)
+        {
+            Console.Write(message);
+            string? input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                return null;
+            }
+            
+            if (int.TryParse(input, out int numericInput) && numericInput >= 0)
+            {
+                return numericInput;
+            }
+            
+            ConsoleHelpers.ClearCurrentConsoleLine();
+        }
+    }
+    
     public static string GetDate(string message, string format, CultureInfo culture, DateTime? defaultValue = null)
     {
         Console.Write(message);

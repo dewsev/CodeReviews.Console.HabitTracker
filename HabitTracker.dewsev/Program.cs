@@ -66,17 +66,17 @@ class Program
         
         List<Habit> habits = HabitsRepository.GetAll();
         
+        Console.WriteLine("Your current habits:\n");
         if (habits.Count > 0)
         {
-            Console.WriteLine("Your current habits:\n");
             ListHabits(habits);
             Console.WriteLine();
         }
         else
         {
-            Console.WriteLine("You have not created any habits yet.\n\n");
+            Console.WriteLine("You have not created any habits yet.\n");
         }
-
+        
         CreateNewHabit();
 
         ConsoleHelpers.WriteColored("\nHabit created!\n\n", ConsoleColor.Green);
@@ -91,11 +91,18 @@ class Program
         
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n\n");
+            Console.WriteLine("You have not created any habits yet.\n");
+            InputReader.AwaitAnyKeyPress();
             return;
         }
 
-        Habit habit = GetEntityChoice("Select a habit to delete:", habits, ListHabits);
+        Console.Clear();
+        Habit? habit = GetEntityChoice("Select a habit to delete:", habits, ListHabits);
+
+        if (habit == null)
+        {
+            return;
+        }
         
         HabitsRepository.Delete(habit.Id);
 
@@ -116,7 +123,12 @@ class Program
             return;
         }
         
-        Habit habit = GetEntityChoice("Select a habit to edit:", habits, ListHabits);
+        Habit? habit = GetEntityChoice("Select a habit to edit:", habits, ListHabits);
+
+        if (habit == null)
+        {
+            return;
+        }
         
         Console.Clear();
         
@@ -200,7 +212,7 @@ class Program
     {
         Console.Clear();
 
-        Habit habit;
+        Habit? habit;
         
         List<Habit> habits = HabitsRepository.GetAll();
         
@@ -212,13 +224,18 @@ class Program
         else
         {
             habit = GetEntityChoice("Select a habit:", habits, ListHabits);
+            
+            if (habit == null)
+            {
+                return;
+            }
         }
 
         Console.Clear();
         ConsoleHelpers.WriteColored($"Adding an occurrence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
         string date = InputReader.GetDate(
-            $"Provide a date ({DateFormatter.DateFormat} or leave empty for today's date): ", 
+            $"Provide a date ({DateFormatter.DateFormat} or press ENTER for today's date): ", 
             DateFormatter.DateFormat,
             DateFormatter.Culture
             );
@@ -243,14 +260,24 @@ class Program
         }
 
         Console.Clear();
-        Habit habit = GetEntityChoice("Select a habit:", habits, ListHabits);
+        Habit? habit = GetEntityChoice("Select a habit:", habits, ListHabits);
 
+        if (habit == null)
+        {
+            return;
+        }
+        
         Console.Clear();
         List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
         ConsoleHelpers.WriteColored($"Editing an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
-        OccurrenceWithHabit chosenOccurrence = GetEntityChoice("Select an occurrence to edit:", occurrences, ListOccurrences);
+        OccurrenceWithHabit? chosenOccurrence = GetEntityChoice("Select an occurrence to edit (press ENTER to go back to the Main Menu):", occurrences, ListOccurrences);
+
+        if (chosenOccurrence == null)
+        {
+            return;
+        }
         
         Console.Clear();
     
@@ -293,21 +320,27 @@ class Program
         InputReader.AwaitAnyKeyPress();
     }
     
-    private static T GetEntityChoice<T>(string message, List<T> entities, Action<List<T>> displayDelegate) where T : IEntity
+    private static T? GetEntityChoice<T>(string message, List<T> entities, Action<List<T>> displayDelegate) where T : class, IEntity
     {
+        Console.WriteLine($"{message}\n");
+        displayDelegate(entities);
+        Console.WriteLine();
+        
         while (true)
         {
-            Console.WriteLine($"{message}\n");
-            displayDelegate(entities);
-            Console.WriteLine();
+            int? id = InputReader.GetNumericNullable("Your choice (press ENTER to go back to the Main Menu): ");
+            if (id == null)
+            {
+                return null;
+            }
             
-            int id = InputReader.GetNumeric("Your choice: ");
-
             var chosenEntity = entities.Find(e => e.Id == id);
             if (chosenEntity != null)
             {
                 return chosenEntity;
             }
+            
+            ConsoleHelpers.ClearCurrentConsoleLine();
         }
     }
 }
