@@ -1,4 +1,6 @@
-﻿namespace HabitTracker.dewsev;
+﻿using HabitTracker.dewsev.Entities;
+
+namespace HabitTracker.dewsev;
 
 class Program
 {

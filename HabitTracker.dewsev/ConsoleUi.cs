@@ -1,3 +1,5 @@
+using HabitTracker.dewsev.Entities;
+
 namespace HabitTracker.dewsev;
 
 public static class ConsoleUi
