@@ -46,27 +46,6 @@ public static class InputReader
         }
     }
     
-    public static int? GetNumericNullable(string message)
-    {
-        while (true)
-        {
-            Console.Write(message);
-            string? input = Console.ReadLine()?.Trim();
-
-            if (string.IsNullOrEmpty(input))
-            {
-                return null;
-            }
-            
-            if (int.TryParse(input, out int numericInput) && numericInput >= 0)
-            {
-                return numericInput;
-            }
-            
-            ConsoleHelpers.ClearCurrentConsoleLine();
-        }
-    }
-    
     public static string GetDate(string message, string format, CultureInfo culture, DateTime? defaultValue = null)
     {
         Console.Write(message);
@@ -91,5 +70,67 @@ public static class InputReader
     {
         Console.WriteLine("Press any key to go back to the Main Menu.");
         Console.ReadKey();
+    }
+    
+    public static Habit? GetHabitChoice(List<Habit> habits)
+    {
+        return GetEntityChoice(habits, ConsoleUi.ShowHabits, "Select a habit:");
+    }
+
+    public static Occurrence? GetOccurrenceChoice(List<Occurrence> occurrences, string unitOfMeasurement)
+    {
+        return GetEntityChoice(
+            occurrences,
+            (o) => ConsoleUi.ShowOccurrences(o, unitOfMeasurement)
+        );
+    }
+    
+    private static int? GetNumericNullable(string message)
+    {
+        while (true)
+        {
+            Console.Write(message);
+            string? input = Console.ReadLine()?.Trim();
+
+            if (string.IsNullOrEmpty(input))
+            {
+                return null;
+            }
+            
+            if (int.TryParse(input, out int numericInput) && numericInput >= 0)
+            {
+                return numericInput;
+            }
+            
+            ConsoleHelpers.ClearCurrentConsoleLine();
+        }
+    }
+    
+    private static T? GetEntityChoice<T>(List<T> entities, Action<List<T>> displayDelegate, string? message = null) where T : class, IEntity
+    {
+        if (message != null)
+        {
+            Console.WriteLine($"{message}\n");    
+        }
+        
+        displayDelegate(entities);
+        Console.WriteLine();
+        
+        while (true)
+        {
+            int? id = GetNumericNullable("Your choice (press ENTER to go back to the Main Menu): ");
+            if (id == null)
+            {
+                return null;
+            }
+            
+            var chosenEntity = entities.Find(e => e.Id == id);
+            if (chosenEntity != null)
+            {
+                return chosenEntity;
+            }
+            
+            ConsoleHelpers.ClearCurrentConsoleLine();
+        }
     }
 }

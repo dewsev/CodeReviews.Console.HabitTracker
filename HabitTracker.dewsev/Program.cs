@@ -28,7 +28,7 @@ class Program
         Console.WriteLine("8.Exit application\n");
         
         Console.Write("Your choice: ");
-        string? choice = Console.ReadLine();
+        string? choice = Console.ReadLine()?.Trim();
         switch (choice)
         {
             case "1":
@@ -52,7 +52,7 @@ class Program
                 EditOccurrenceMenu();
                 break;
             case "7":
-                DeleteOccurrence();
+                DeleteOccurrenceMenu();
                 break;
             case "8":
                 Environment.Exit(0);
@@ -63,23 +63,22 @@ class Program
     private static void AddNewHabitMenu()
     {
         Console.Clear();
+        Console.WriteLine("Your current habits:\n");
         
         List<Habit> habits = HabitsRepository.GetAll();
-        
-        Console.WriteLine("Your current habits:\n");
-        if (habits.Count > 0)
+        if (habits.Count == 0)
         {
-            ListHabits(habits);
-            Console.WriteLine();
+            ConsoleUi.ShowEmptyHabitListMessage(false);
         }
         else
         {
-            Console.WriteLine("You have not created any habits yet.\n");
+            ConsoleUi.ShowHabits(habits);
+            Console.WriteLine();
         }
-        
-        CreateNewHabit();
 
-        ConsoleHelpers.WriteColored("\nHabit created!\n\n", ConsoleColor.Green);
+        Console.WriteLine("---------------------------------------------");
+        CreateNewHabit();
+        ConsoleUi.ShowSuccess("Habit created!");
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -88,25 +87,19 @@ class Program
         Console.Clear();
         
         List<Habit> habits = HabitsRepository.GetAll();
-        
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyHabitListMessage();
             return;
         }
 
         Console.Clear();
-        Habit? habit = GetEntityChoice("Select a habit to delete:", habits, ListHabits);
-
-        if (habit == null)
-        {
-            return;
-        }
+        
+        Habit? habit = InputReader.GetHabitChoice(habits);
+        if (habit == null) return;
         
         HabitsRepository.Delete(habit.Id);
-
-        ConsoleHelpers.WriteColored("\nHabit deleted.\n\n", ConsoleColor.Green);
+        ConsoleUi.ShowSuccess("Habit deleted!");
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -115,31 +108,19 @@ class Program
         Console.Clear();
         
         List<Habit> habits = HabitsRepository.GetAll();
-        
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyHabitListMessage();
             return;
         }
-        
-        Habit? habit = GetEntityChoice("Select a habit to edit:", habits, ListHabits);
 
-        if (habit == null)
-        {
-            return;
-        }
+        Habit? habit = InputReader.GetHabitChoice(habits);
+        if (habit == null) return;
         
         Console.Clear();
-        
-        ConsoleHelpers.WriteColored($"Editing habit \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-        
-        string name = InputReader.GetString($"New habit name (press ENTER to keep current: {habit.Name}): ", habit.Name);
-        string unitOfMeasurement = InputReader.GetString($"New unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
-
-        HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
-        
-        ConsoleHelpers.WriteColored("\nHabit edited.\n\n", ConsoleColor.Green);
+        ConsoleUi.ShowInfo($"Editing habit \"{habit.Name}\"...");
+        EditHabit(habit);
+        ConsoleUi.ShowSuccess("Habit edited!");
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -149,63 +130,42 @@ class Program
         Console.Clear();
 
         Habit? habit;
-        
         List<Habit> habits = HabitsRepository.GetAll();
-        
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n");
+            ConsoleUi.ShowEmptyHabitListMessage(false);
             habit = CreateNewHabit();
         }
         else
         {
-            habit = GetEntityChoice("Select a habit:", habits, ListHabits);
-            
-            if (habit == null)
-            {
-                return;
-            }
+            habit = InputReader.GetHabitChoice(habits);
+            if (habit == null) return;
         }
 
         Console.Clear();
-        ConsoleHelpers.WriteColored($"Adding an occurrence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-        
-        string date = InputReader.GetDate(
-            $"Provide a date ({DateFormatter.DateFormat} or press ENTER for today's date): ", 
-            DateFormatter.DateFormat,
-            DateFormatter.Culture
-            );
-        
-        int quantity = InputReader.GetNumeric("Provide quantity: ");
-
-        OccurrencesRepository.Insert(date, quantity, habit.Id);
-        
-        ConsoleHelpers.WriteColored("\nOccurrence added.\n\n", ConsoleColor.Green);
+        ConsoleUi.ShowInfo($"Adding an occurrence for \"{habit.Name}\"...");
+        CreateNewOccurrence(habit.Id);
+        ConsoleUi.ShowSuccess("Occurrence added!");
         InputReader.AwaitAnyKeyPress();
     }
 
     private static void EditOccurrenceMenu()
     {
         List<Habit> habits = HabitsRepository.GetAll();
-        
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyHabitListMessage();
             return;
         }
 
         Console.Clear();
-        Habit? habit = GetEntityChoice("Select a habit:", habits, ListHabits);
-
-        if (habit == null)
-        {
-            return;
-        }
+        
+        Habit? habit = InputReader.GetHabitChoice(habits);
+        if (habit == null) return;
         
         Console.Clear();
+        
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
-        
         if (occurrences.Count == 0)
         {
             Console.WriteLine("This habit doesn't have any occurrences to edit.\n");
@@ -213,95 +173,50 @@ class Program
             return;
         }
         
-        ConsoleHelpers.WriteColored($"Editing an occurrence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-        
-        Occurrence? chosenOccurrence = GetEntityChoice(
-            "Select an occurrence to edit:",
-            occurrences,
-            (o) => ListOccurrences(o, habit.UnitOfMeasurement)
-            );
-
-        if (chosenOccurrence == null)
-        {
-            return;
-        }
+        ConsoleUi.ShowInfo($"Editing an occurrence for \"{habit.Name}\"...");
+        Occurrence? occurrence = InputReader.GetOccurrenceChoice(occurrences, habit.UnitOfMeasurement);
+        if (occurrence == null) return;
         
         Console.Clear();
-    
-        ConsoleHelpers.WriteColored($"Editing occurrence with ID {chosenOccurrence.Id} for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-    
-        string date = InputReader.GetDate(
-            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTimeString(chosenOccurrence.Date)}): ", 
-            DateFormatter.DateFormat, 
-            DateFormatter.Culture, 
-            chosenOccurrence.Date
-            );
-        
-        int quantity = InputReader.GetNumeric(
-            $"Provide new quantity (press ENTER to keep current: {chosenOccurrence.Quantity}): ",
-            chosenOccurrence.Quantity
-            );
-        
-        OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
-        
-        ConsoleHelpers.WriteColored("\nOccurrence edited.\n\n", ConsoleColor.Green);
+        ConsoleUi.ShowInfo($"Editing occurrence with ID {occurrence.Id} for \"{habit.Name}\"...");
+        EditOccurrence(occurrence);
+        ConsoleUi.ShowSuccess("Occurrence edited!");
         InputReader.AwaitAnyKeyPress();
     }
     
-    private static void DeleteOccurrence()
+    private static void DeleteOccurrenceMenu()
     {
         Console.Clear();
-        List<Habit> habits = HabitsRepository.GetAll();
         
+        List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyHabitListMessage();
             return;
         }
     
         Console.Clear();
-        Habit? habit = GetEntityChoice("Select a habit:", habits, ListHabits);
-    
-        if (habit == null)
-        {
-            return;
-        }
+
+        Habit? habit = InputReader.GetHabitChoice(habits);
+        if (habit == null) return;
         
         Console.Clear();
+        
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
-
         if (occurrences.Count == 0)
         {
             Console.WriteLine("This habit doesn't have any occurrences to delete.\n");
             InputReader.AwaitAnyKeyPress();
             return;
         }
-        
-        ConsoleHelpers.WriteColored($"Deleting an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
-        
-        Occurrence? chosenOccurrence = GetEntityChoice(
-            "Select an occurrence to remove:",
-            occurrences,
-            (o) => ListOccurrences(o, habit.UnitOfMeasurement)
-        );
+
+        ConsoleUi.ShowInfo($"Deleting an occurrence for \"{habit.Name}\"...");
+        Occurrence? occurrence = InputReader.GetOccurrenceChoice(occurrences, habit.UnitOfMeasurement);
+        if (occurrence == null) return;
     
-        if (chosenOccurrence == null)
-        {
-            return;
-        }
-    
-        OccurrencesRepository.Delete(chosenOccurrence.Id);
-        
-        ConsoleHelpers.WriteColored("\nOccurrence deleted.\n\n", ConsoleColor.Green);
+        OccurrencesRepository.Delete(occurrence.Id);
+        ConsoleUi.ShowSuccess("Occurrence deleted!");
         InputReader.AwaitAnyKeyPress();
-    }
-    
-    private static Habit CreateNewHabit()
-    {
-        string name = InputReader.GetString("Habit name: ");
-        string unitOfMeasurement = InputReader.GetString("Unit of measurement: ");
-        return HabitsRepository.Insert(name, unitOfMeasurement);
     }
     
     private static void ListAllHabitsWithOccurrences()
@@ -312,77 +227,57 @@ class Program
 
         if (habits.Count == 0)
         {
-            Console.WriteLine("You have not created any habits yet.");
+            ConsoleUi.ShowEmptyHabitListMessage(false);
         }
         else
         {
-            foreach (Habit habit in habits)
-            {
-                ConsoleHelpers.WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
-                Console.Write($"{habit.Name}\n");
-
-                List<Occurrence> currentHabitOccurrences = occurrences.FindAll(o => o.HabitId == habit.Id);
-
-                if (currentHabitOccurrences.Count == 0)
-                {
-                    Console.WriteLine("└── There are no occurrences logged for this habit yet.");
-                    continue;
-                }
-                
-                for (int i = 0; i < currentHabitOccurrences.Count; i++)
-                {
-                    Occurrence occurrence = currentHabitOccurrences[i];
-                    
-                    string asciiCharacter = i == currentHabitOccurrences.Count - 1 ? "└──" : "├──";
-                    Console.Write($"{asciiCharacter} {DateFormatter.FormatDateTimeString(occurrence.Date)}");
-                    Console.Write(" — ");
-                    Console.Write($"{occurrence.Quantity} {habit.UnitOfMeasurement}\n");
-                }
-            }
-        }
-    }
-
-    private static void ListHabits(List<Habit> habits)
-    {
-        foreach (Habit habit in habits)
-        {
-            ConsoleHelpers.WriteColored($"{habit.Id}.", ConsoleColor.Cyan);
-            Console.Write($"{habit.Name}\n");
+            ConsoleUi.ShowHabitsWithOccurrences(habits, occurrences);
         }
     }
     
-    private static void ListOccurrences(List<Occurrence> occurrences, string unitOfMeasurement)
+    private static void EditOccurrence(Occurrence occurrence)
     {
-        foreach (Occurrence occurrence in occurrences)
-        {
-            ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
-            Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
-            Console.Write(" — ");
-            Console.Write($"{occurrence.Quantity} {unitOfMeasurement}\n");
-        }
-    }
-    
-    private static T? GetEntityChoice<T>(string message, List<T> entities, Action<List<T>> displayDelegate) where T : class, IEntity
-    {
-        Console.WriteLine($"{message}\n");
-        displayDelegate(entities);
-        Console.WriteLine();
+        string date = InputReader.GetDate(
+            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTimeString(occurrence.Date)}): ", 
+            DateFormatter.DateFormat, 
+            DateFormatter.Culture, 
+            occurrence.Date
+        );
         
-        while (true)
-        {
-            int? id = InputReader.GetNumericNullable("Your choice (press ENTER to go back to the Main Menu): ");
-            if (id == null)
-            {
-                return null;
-            }
-            
-            var chosenEntity = entities.Find(e => e.Id == id);
-            if (chosenEntity != null)
-            {
-                return chosenEntity;
-            }
-            
-            ConsoleHelpers.ClearCurrentConsoleLine();
-        }
+        int quantity = InputReader.GetNumeric(
+            $"Provide new quantity (press ENTER to keep current: {occurrence.Quantity}): ",
+            occurrence.Quantity
+        );
+        
+        OccurrencesRepository.Update(occurrence.Id, date, quantity);
+    }
+
+    private static void CreateNewOccurrence(int habitId)
+    {
+        string date = InputReader.GetDate(
+            $"Provide a date ({DateFormatter.DateFormat} or press ENTER for today's date): ", 
+            DateFormatter.DateFormat,
+            DateFormatter.Culture
+        );
+        
+        int quantity = InputReader.GetNumeric("Provide quantity: ");
+
+        OccurrencesRepository.Insert(date, quantity, habitId);
+    }
+    
+    private static Habit CreateNewHabit()
+    {
+        ConsoleUi.ShowInfo("Creating new habit...");
+        string name = InputReader.GetString("Name: ");
+        string unitOfMeasurement = InputReader.GetString("Unit of measurement: ");
+        return HabitsRepository.Insert(name, unitOfMeasurement);
+    }
+
+    private static void EditHabit(Habit habit)
+    {
+        string name = InputReader.GetString($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetString($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+
+        HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
     }
 }
