@@ -5,27 +5,17 @@ namespace HabitTracker.dewsev;
 
 public static class InputReader
 {
-    public static string? GetStringNullable(string message, string? defaultValue = null)
+    public static string? GetStringNullable(string message)
+    {
+        Console.Write(message);
+        return Console.ReadLine()?.Trim();
+    }
+    
+    public static string GetStringWithFallback(string message, string fallbackValue)
     {
         Console.Write(message);
         string? input = Console.ReadLine()?.Trim();
-        return string.IsNullOrEmpty(input) ? defaultValue : input;
-        while (true)
-        {
-            Console.Write(message);
-            
-            if (defaultValue != null && string.IsNullOrEmpty(input))
-            {
-                return defaultValue;
-            }
-            
-            if (!string.IsNullOrEmpty(input))
-            {
-                return input;
-            }
-            
-            ConsoleHelpers.ClearCurrentConsoleLine();
-        }
+        return string.IsNullOrEmpty(input) ? fallbackValue : input;
     }
     
     public static int GetNumeric(string message, int? defaultValue = null)
@@ -49,17 +39,17 @@ public static class InputReader
         }
     }
     
-    public static string GetDate(string message, string format, CultureInfo culture, DateTime? defaultValue = null)
+    public static string GetDateWithFallback(string message, DateTime fallbackValue)
     {
         Console.Write(message);
         string? input = Console.ReadLine();
 
         if (string.IsNullOrEmpty(input))
         {
-            return DateFormatter.FormatDateTime(defaultValue ?? DateTime.Now);
+            return DateFormatter.FormatDateTime(fallbackValue);
         }
         
-        while (!DateTime.TryParseExact(input, format, culture, DateTimeStyles.None, out _))
+        while (!DateTime.TryParseExact(input, DateFormatter.DateFormat, DateFormatter.Culture, DateTimeStyles.None, out _))
         {
             ConsoleHelpers.WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
             Console.Write(message);

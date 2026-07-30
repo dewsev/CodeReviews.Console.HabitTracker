@@ -242,10 +242,8 @@ class Program
     
     private static void EditOccurrence(Occurrence occurrence)
     {
-        string date = InputReader.GetDate(
+        string date = InputReader.GetDateWithFallback(
             $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTime(occurrence.Date)}): ", 
-            DateFormatter.DateFormat, 
-            DateFormatter.Culture, 
             occurrence.Date
         );
         
@@ -259,10 +257,9 @@ class Program
 
     private static void CreateNewOccurrence(int habitId)
     {
-        string date = InputReader.GetDate(
+        string date = InputReader.GetDateWithFallback(
             $"Provide a date ({DateFormatter.DateFormat} or press ENTER for today's date): ", 
-            DateFormatter.DateFormat,
-            DateFormatter.Culture
+            DateTime.Now
         );
         
         int quantity = InputReader.GetNumeric("Provide quantity: ");
@@ -284,10 +281,9 @@ class Program
 
     private static void EditHabit(Habit habit)
     {
-        // TODO: FIX THIS
-        string? name = InputReader.GetStringNullable($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
-        string? unitOfMeasurement = InputReader.GetStringNullable($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+        string name = InputReader.GetStringWithFallback($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetStringWithFallback($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
 
-        HabitsRepository.Update(habit.Id, name!, unitOfMeasurement!);
+        HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
     }
 }
