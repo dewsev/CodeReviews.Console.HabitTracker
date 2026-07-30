@@ -208,6 +208,17 @@ class Program
         }
     }
     
+    // private static void ListOccurrences(List<OccurrenceWithHabit> occurrences)
+    // {
+    //     foreach (OccurrenceWithHabit occurrence in occurrences)
+    //     {
+    //         ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
+    //         Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
+    //         Console.Write(" — ");
+    //         Console.Write($"{occurrence.Quantity} {occurrence.UnitOfMeasurement}\n");
+    //     }
+    // }
+    
     private static void AddOccurrenceMenu()
     {
         Console.Clear();
