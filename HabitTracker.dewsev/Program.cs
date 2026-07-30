@@ -51,9 +51,9 @@ class Program
             case "6":
                 EditOccurrenceMenu();
                 break;
-            case "7":
-                DeleteOccurrence();
-                break;
+            // case "7":
+                // DeleteOccurrence();
+                // break;
             case "8":
                 Environment.Exit(0);
                 break;
@@ -197,16 +197,27 @@ class Program
         }
     }
     
-    private static void ListOccurrences(List<OccurrenceWithHabit> occurrences)
+    private static void ListOccurrences(List<Occurrence> occurrences, string unitOfMeasurement)
     {
-        foreach (OccurrenceWithHabit occurrence in occurrences)
+        foreach (Occurrence occurrence in occurrences)
         {
             ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
             Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
             Console.Write(" — ");
-            Console.Write($"{occurrence.Quantity} {occurrence.UnitOfMeasurement}\n");
+            Console.Write($"{occurrence.Quantity} {unitOfMeasurement}\n");
         }
     }
+    
+    // private static void ListOccurrences(List<OccurrenceWithHabit> occurrences)
+    // {
+    //     foreach (OccurrenceWithHabit occurrence in occurrences)
+    //     {
+    //         ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
+    //         Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
+    //         Console.Write(" — ");
+    //         Console.Write($"{occurrence.Quantity} {occurrence.UnitOfMeasurement}\n");
+    //     }
+    // }
     
     private static void AddOccurrenceMenu()
     {
@@ -268,11 +279,15 @@ class Program
         }
         
         Console.Clear();
-        List<OccurrenceWithHabit> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
+        List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
-        ConsoleHelpers.WriteColored($"Editing an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
+        ConsoleHelpers.WriteColored($"Removing an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
-        OccurrenceWithHabit? chosenOccurrence = GetEntityChoice("Select an occurrence to edit (press ENTER to go back to the Main Menu):", occurrences, ListOccurrences);
+        Occurrence? chosenOccurrence = GetEntityChoice(
+            "Select an occurrence to edit (press ENTER to go back to the Main Menu):",
+            occurrences,
+            (o) => ListOccurrences(o, habit.UnitOfMeasurement)
+            );
 
         if (chosenOccurrence == null)
         {
@@ -303,20 +318,41 @@ class Program
     
     private static void DeleteOccurrence()
     {
-        // TODO: Update this method
-        Console.WriteLine();
+        Console.Clear();
+        List<Habit> habits = HabitsRepository.GetAll();
         
-        int occurrencesCount = OccurrencesRepository.GetAll().Count;
-        
-        if (occurrencesCount != 0)
+        if (habits.Count == 0)
         {
-            int id = InputReader.GetNumeric("Provide ID of an occurence that you want to delete: ");
-
-            OccurrencesRepository.Delete(id);
-
-            ConsoleHelpers.WriteColored($"Occurrence with ID {id} was successfully deleted.\n", ConsoleColor.Green);
+            Console.WriteLine("You have not created any habits yet.\n");
+            InputReader.AwaitAnyKeyPress();
+            return;
         }
-
+    
+        Console.Clear();
+        Habit? habit = GetEntityChoice("Select a habit:", habits, ListHabits);
+    
+        if (habit == null)
+        {
+            return;
+        }
+        
+        Console.Clear();
+        List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
+        
+        ConsoleHelpers.WriteColored($"Editing an occurence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
+        
+        Occurrence? chosenOccurrence = GetEntityChoice(
+            "Select an occurrence to edit (press ENTER to go back to the Main Menu):",
+            occurrences,
+            (o) => ListOccurrences(o, habit.UnitOfMeasurement)
+        );
+    
+        if (chosenOccurrence == null)
+        {
+            return;
+        }
+    
+        ConsoleHelpers.WriteColored("\nOccurrence deleted.\n\n", ConsoleColor.Green);
         InputReader.AwaitAnyKeyPress();
     }
     
