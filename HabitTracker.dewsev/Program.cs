@@ -206,6 +206,13 @@ class Program
         Console.Clear();
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
+        if (occurrences.Count == 0)
+        {
+            Console.WriteLine("This habit doesn't have any occurrences to edit.\n");
+            InputReader.AwaitAnyKeyPress();
+            return;
+        }
+        
         ConsoleHelpers.WriteColored($"Editing an occurrence for \"{habit.Name}\"...\n\n", ConsoleColor.Yellow);
         
         Occurrence? chosenOccurrence = GetEntityChoice(
@@ -237,7 +244,7 @@ class Program
         
         OccurrencesRepository.Update(chosenOccurrence.Id, date, quantity);
         
-        ConsoleHelpers.WriteColored("\nOccurrence updated.\n\n", ConsoleColor.Green);
+        ConsoleHelpers.WriteColored("\nOccurrence edited.\n\n", ConsoleColor.Green);
         InputReader.AwaitAnyKeyPress();
     }
     
