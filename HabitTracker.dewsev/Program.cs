@@ -34,7 +34,7 @@ class Program
         switch (choice)
         {
             case "1":
-                AddNewHabitMenu();
+                AddHabitMenu();
                 break;
             case "2":
                 DeleteHabitMenu();
@@ -62,7 +62,7 @@ class Program
         }
     }
 
-    private static void AddNewHabitMenu()
+    private static void AddHabitMenu()
     {
         Console.Clear();
         Console.WriteLine("Your current habits:\n");
@@ -79,7 +79,9 @@ class Program
         }
 
         Console.WriteLine("---------------------------------------------");
-        CreateNewHabit();
+        Habit? habit = CreateHabit();
+        if (habit is null) return;
+        
         ConsoleUi.ShowSuccess("Habit created!");
         InputReader.AwaitAnyKeyPress();
     }
@@ -136,14 +138,15 @@ class Program
         if (habits.Count == 0)
         {
             ConsoleUi.ShowEmptyHabitListMessage(false);
-            habit = CreateNewHabit();
+            habit = CreateHabit();
         }
         else
         {
             habit = InputReader.GetHabitChoice(habits);
-            if (habit == null) return;
         }
 
+        if (habit == null) return;
+        
         Console.Clear();
         ConsoleUi.ShowInfo($"Adding an occurrence for \"{habit.Name}\"...");
         CreateNewOccurrence(habit.Id);
@@ -267,19 +270,24 @@ class Program
         OccurrencesRepository.Insert(date, quantity, habitId);
     }
     
-    private static Habit CreateNewHabit()
+    private static Habit? CreateHabit()
     {
         ConsoleUi.ShowInfo("Creating new habit...");
-        string name = InputReader.GetString("Name: ");
-        string unitOfMeasurement = InputReader.GetString("Unit of measurement: ");
+        string? name = InputReader.GetStringNullable("Name (press ENTER to go back to the Main Menu): ");
+        if (name is null) return null;
+        
+        string? unitOfMeasurement = InputReader.GetStringNullable("Unit of measurement (press ENTER to go back to the Main Menu): ");
+        if (unitOfMeasurement is null) return null;
+        
         return HabitsRepository.Insert(name, unitOfMeasurement);
     }
 
     private static void EditHabit(Habit habit)
     {
-        string name = InputReader.GetString($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
-        string unitOfMeasurement = InputReader.GetString($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+        // TODO: FIX THIS
+        string? name = InputReader.GetStringNullable($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
+        string? unitOfMeasurement = InputReader.GetStringNullable($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
 
-        HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
+        HabitsRepository.Update(habit.Id, name!, unitOfMeasurement!);
     }
 }

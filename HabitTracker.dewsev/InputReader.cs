@@ -5,12 +5,14 @@ namespace HabitTracker.dewsev;
 
 public static class InputReader
 {
-    public static string GetString(string message, string? defaultValue = null)
+    public static string? GetStringNullable(string message, string? defaultValue = null)
     {
+        Console.Write(message);
+        string? input = Console.ReadLine()?.Trim();
+        return string.IsNullOrEmpty(input) ? defaultValue : input;
         while (true)
         {
             Console.Write(message);
-            string? input = Console.ReadLine()?.Trim();
             
             if (defaultValue != null && string.IsNullOrEmpty(input))
             {
