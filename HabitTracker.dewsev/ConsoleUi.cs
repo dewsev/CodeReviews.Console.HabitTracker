@@ -50,7 +50,7 @@ public static class ConsoleUi
         }
     }
     
-    public static void ShowEmptyHabitListMessage(bool awaitInput = true)
+    public static void ShowEmptyHabitsMessage(bool awaitInput = true)
     {
         Console.WriteLine("You have not created any habits yet.\n");
 
@@ -60,6 +60,12 @@ public static class ConsoleUi
         }
     }
 
+    public static void ShowEmptyOccurrencesMessage()
+    {
+        Console.WriteLine("This habit doesn't have any occurrences yet.\n");
+        InputReader.AwaitAnyKeyPress();
+    }
+    
     public static void ShowSuccess(string message)
     {
         ConsoleHelpers.WriteColored($"\n{message}\n\n", ConsoleColor.Green);

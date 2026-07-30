@@ -100,7 +100,7 @@ public class OccurrencesRepository
         command.ExecuteNonQuery();
     }
     
-    public void Insert(string date, int quantity, int habitId)
+    public Occurrence Insert(string date, int quantity, int habitId)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -111,9 +111,19 @@ public class OccurrencesRepository
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
         command.Parameters.Add("@habitId", SqliteType.Integer).Value = habitId;
         
-        command.CommandText = "INSERT INTO Occurrences (Date, Quantity, HabitID) VALUES (@date, @quantity, @habitId)";
+        command.CommandText = "INSERT INTO Occurrences (Date, Quantity, HabitID) VALUES (@date, @quantity, @habitId) RETURNING *";
     
-        command.ExecuteNonQuery();
+        using var reader = command.ExecuteReader();
+
+        reader.Read();
+
+        return new Occurrence
+        {
+            Id = reader.GetInt32(0),
+            Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
+            Quantity = reader.GetInt32(2),
+            HabitId = reader.GetInt32(3),
+        };
     }
     
     public void Update(int id, string date, int quantity)

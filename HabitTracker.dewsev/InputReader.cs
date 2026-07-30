@@ -8,7 +8,8 @@ public static class InputReader
     public static string? GetStringNullable(string message)
     {
         Console.Write(message);
-        return Console.ReadLine()?.Trim();
+        string? input = Console.ReadLine()?.Trim();
+        return string.IsNullOrEmpty(input) ? null : input;
     }
     
     public static string GetStringWithFallback(string message, string fallbackValue)
@@ -18,16 +19,16 @@ public static class InputReader
         return string.IsNullOrEmpty(input) ? fallbackValue : input;
     }
     
-    public static int GetNumeric(string message, int? defaultValue = null)
+    public static int GetNumericWithFallback(string message, int fallbackValue)
     {
         while (true)
         {
             Console.Write(message);
             string? input = Console.ReadLine()?.Trim();
 
-            if (defaultValue != null && string.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(input))
             {
-                return defaultValue.Value;
+                return fallbackValue;
             }
             
             if (!string.IsNullOrEmpty(input) && int.TryParse(input, out int numericInput) && numericInput >= 0)
@@ -78,7 +79,7 @@ public static class InputReader
         );
     }
     
-    private static int? GetNumericNullable(string message)
+    public static int? GetNumericNullable(string message)
     {
         while (true)
         {
@@ -111,7 +112,7 @@ public static class InputReader
         
         while (true)
         {
-            int? id = GetNumericNullable("Your choice (press ENTER to go back to the Main Menu): ");
+            int? id = GetNumericNullable("Your choice (ENTER = Main Menu): ");
             if (id == null)
             {
                 return null;

@@ -70,7 +70,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage(false);
+            ConsoleUi.ShowEmptyHabitsMessage(false);
         }
         else
         {
@@ -93,7 +93,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage();
+            ConsoleUi.ShowEmptyHabitsMessage();
             return;
         }
 
@@ -114,7 +114,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage();
+            ConsoleUi.ShowEmptyHabitsMessage();
             return;
         }
 
@@ -137,7 +137,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage(false);
+            ConsoleUi.ShowEmptyHabitsMessage(false);
             habit = CreateHabit();
         }
         else
@@ -149,7 +149,10 @@ class Program
         
         Console.Clear();
         ConsoleUi.ShowInfo($"Adding an occurrence for \"{habit.Name}\"...");
-        CreateNewOccurrence(habit.Id);
+        
+        Occurrence? occurence = CreateNewOccurrence(habit.Id);
+        if (occurence is null) return;
+        
         ConsoleUi.ShowSuccess("Occurrence added!");
         InputReader.AwaitAnyKeyPress();
     }
@@ -159,7 +162,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage();
+            ConsoleUi.ShowEmptyHabitsMessage();
             return;
         }
 
@@ -173,8 +176,7 @@ class Program
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         if (occurrences.Count == 0)
         {
-            Console.WriteLine("This habit doesn't have any occurrences to edit.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyOccurrencesMessage();
             return;
         }
         
@@ -196,7 +198,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage();
+            ConsoleUi.ShowEmptyHabitsMessage();
             return;
         }
     
@@ -210,8 +212,7 @@ class Program
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         if (occurrences.Count == 0)
         {
-            Console.WriteLine("This habit doesn't have any occurrences to delete.\n");
-            InputReader.AwaitAnyKeyPress();
+            ConsoleUi.ShowEmptyOccurrencesMessage();
             return;
         }
 
@@ -232,7 +233,7 @@ class Program
 
         if (habits.Count == 0)
         {
-            ConsoleUi.ShowEmptyHabitListMessage(false);
+            ConsoleUi.ShowEmptyHabitsMessage(false);
         }
         else
         {
@@ -243,37 +244,38 @@ class Program
     private static void EditOccurrence(Occurrence occurrence)
     {
         string date = InputReader.GetDateWithFallback(
-            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTime(occurrence.Date)}): ", 
+            $"Provide new date (ENTER = {DateFormatter.FormatDateTime(occurrence.Date)}): ", 
             occurrence.Date
         );
         
-        int quantity = InputReader.GetNumeric(
-            $"Provide new quantity (press ENTER to keep current: {occurrence.Quantity}): ",
+        int quantity = InputReader.GetNumericWithFallback(
+            $"Provide new quantity (ENTER = {occurrence.Quantity}): ",
             occurrence.Quantity
         );
         
         OccurrencesRepository.Update(occurrence.Id, date, quantity);
     }
 
-    private static void CreateNewOccurrence(int habitId)
+    private static Occurrence? CreateNewOccurrence(int habitId)
     {
         string date = InputReader.GetDateWithFallback(
-            $"Provide a date ({DateFormatter.DateFormat} or press ENTER for today's date): ", 
+            $"Provide a date ({DateFormatter.DateFormat} or ENTER for today): ", 
             DateTime.Now
         );
         
-        int quantity = InputReader.GetNumeric("Provide quantity: ");
+        int? quantity = InputReader.GetNumericNullable("Provide quantity (ENTER = Main Menu): ");
+        if (quantity is null) return null;
 
-        OccurrencesRepository.Insert(date, quantity, habitId);
+        return OccurrencesRepository.Insert(date, quantity.Value, habitId);
     }
     
     private static Habit? CreateHabit()
     {
         ConsoleUi.ShowInfo("Creating new habit...");
-        string? name = InputReader.GetStringNullable("Name (press ENTER to go back to the Main Menu): ");
+        string? name = InputReader.GetStringNullable("Name (ENTER = Main Menu): ");
         if (name is null) return null;
         
-        string? unitOfMeasurement = InputReader.GetStringNullable("Unit of measurement (press ENTER to go back to the Main Menu): ");
+        string? unitOfMeasurement = InputReader.GetStringNullable("Unit of measurement (ENTER = Main Menu): ");
         if (unitOfMeasurement is null) return null;
         
         return HabitsRepository.Insert(name, unitOfMeasurement);
@@ -281,8 +283,8 @@ class Program
 
     private static void EditHabit(Habit habit)
     {
-        string name = InputReader.GetStringWithFallback($"Name (press ENTER to keep current: {habit.Name}): ", habit.Name);
-        string unitOfMeasurement = InputReader.GetStringWithFallback($"Unit of measurement (press ENTER to keep current: {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
+        string name = InputReader.GetStringWithFallback($"Name (ENTER = {habit.Name}): ", habit.Name);
+        string unitOfMeasurement = InputReader.GetStringWithFallback($"Unit of measurement (ENTER = {habit.UnitOfMeasurement}): ", habit.UnitOfMeasurement);
 
         HabitsRepository.Update(habit.Id, name, unitOfMeasurement);
     }
