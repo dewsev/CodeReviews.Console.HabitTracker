@@ -145,7 +145,7 @@ class Program
     
     private static Habit CreateNewHabit()
     {
-        string name = InputReader.GetString("New habit name: ");
+        string name = InputReader.GetString("Habit name: ");
         string unitOfMeasurement = InputReader.GetString("Unit of measurement: ");
         return HabitsRepository.Insert(name, unitOfMeasurement);
     }
