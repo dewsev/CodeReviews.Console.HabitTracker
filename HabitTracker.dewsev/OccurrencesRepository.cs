@@ -57,7 +57,7 @@ public class OccurrencesRepository
         return occurrences;
     }
     
-    public List<OccurrenceWithHabit> GetAllByHabitId(int habitId)
+    public List<Occurrence> GetAllByHabitId(int habitId)
     {
         using var connection = new SqliteConnection(_connectionString);
         connection.Open();
@@ -66,35 +66,25 @@ public class OccurrencesRepository
 
         command.Parameters.Add("@habitId", SqliteType.Integer).Value = habitId;
         
-        command.CommandText = @"SELECT O.OccurrenceID,
-                                       O.Date,
-                                       O.Quantity,
-                                       O.HabitID,
-                                       H.UnitOfMeasurement,
-                                       H.Name AS HabitName
-                                FROM Occurrences O
-                                JOIN Habits H 
-                                ON O.HabitID = H.HabitID WHERE O.HabitID = @habitId";
+        command.CommandText = "SELECT * FROM Occurrences WHERE HabitID = @habitId";
 
-        List<OccurrenceWithHabit> occurrences = [];
+        List<Occurrence> occurrences = [];
         using var reader = command.ExecuteReader();
 
         while (reader.Read())
         {
-            occurrences.Add(new OccurrenceWithHabit
+            occurrences.Add(new Occurrence
             {
                 Id = reader.GetInt32(0),
                 Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
                 Quantity = reader.GetInt32(2),
                 HabitId = reader.GetInt32(3),
-                UnitOfMeasurement = reader.GetString(4),
-                HabitName = reader.GetString(5)
             });
         }
   
         return occurrences;
     }
-    
+  
     public void Delete(int id)
     {
         using var connection = new SqliteConnection(_connectionString);
