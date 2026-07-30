@@ -238,7 +238,7 @@ class Program
     private static void EditOccurrence(Occurrence occurrence)
     {
         string date = InputReader.GetDate(
-            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTimeString(occurrence.Date)}): ", 
+            $"Provide new date (press ENTER to keep current: {DateFormatter.FormatDateTime(occurrence.Date)}): ", 
             DateFormatter.DateFormat, 
             DateFormatter.Culture, 
             occurrence.Date

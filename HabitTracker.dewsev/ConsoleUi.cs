@@ -21,7 +21,7 @@ public static class ConsoleUi
                 Occurrence occurrence = currentHabitOccurrences[i];
                     
                 string prefixCharacter = i == currentHabitOccurrences.Count - 1 ? "└──" : "├──";
-                Console.Write($"{prefixCharacter} {DateFormatter.FormatDateTimeString(occurrence.Date)}");
+                Console.Write($"{prefixCharacter} {DateFormatter.FormatDateTime(occurrence.Date)}");
                 Console.Write(" — ");
                 Console.Write($"{occurrence.Quantity} {habit.UnitOfMeasurement}\n");
             }
@@ -42,7 +42,7 @@ public static class ConsoleUi
         foreach (Occurrence occurrence in occurrences)
         {
             ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
-            Console.Write(DateFormatter.FormatDateTimeString(occurrence.Date));
+            Console.Write(DateFormatter.FormatDateTime(occurrence.Date));
             Console.Write(" — ");
             Console.Write($"{occurrence.Quantity} {unitOfMeasurement}\n");
         }

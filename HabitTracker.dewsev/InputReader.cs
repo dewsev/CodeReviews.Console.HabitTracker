@@ -53,7 +53,7 @@ public static class InputReader
 
         if (string.IsNullOrEmpty(input))
         {
-            return DateFormatter.FormatDateTimeString(defaultValue ?? DateTime.Now);
+            return DateFormatter.FormatDateTime(defaultValue ?? DateTime.Now);
         }
         
         while (!DateTime.TryParseExact(input, format, culture, DateTimeStyles.None, out _))
