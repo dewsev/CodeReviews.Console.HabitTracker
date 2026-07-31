@@ -55,33 +55,33 @@ public class HabitsRepository
         return habits;
     }
 
-    // public Habit? GetSingle(int id)
-    // {
-    //     using var connection = new SqliteConnection(_connectionString);
-    //     connection.Open();
-    //
-    //     using var command = connection.CreateCommand();
-    //     
-    //     command.Parameters.Add("@id", SqliteType.Integer).Value = id;
-    //     
-    ////    command.CommandText = "SELECT * FROM Habits WHERE HabitID = @id";
-    //
-    //     using var reader = command.ExecuteReader();
-    //
-    //     if (!reader.HasRows)
-    //     {
-    //         return null;
-    //     }
-    //     
-    //     reader.Read();
-    //
-    //     return new Habit
-    //     {
-    //         Id = reader.GetInt32(0),
-    //         Name = reader.GetString(1),
-    //         UnitOfMeasurement = reader.GetString(2)
-    //     };
-    // }
+     public Habit? GetSingleById(int id)
+     {
+         using var connection = new SqliteConnection(_connectionString);
+         connection.Open();
+    
+         using var command = connection.CreateCommand();
+         
+         command.Parameters.Add("@id", SqliteType.Integer).Value = id;
+         
+         command.CommandText = "SELECT * FROM Habits WHERE HabitID = @id";
+    
+         using var reader = command.ExecuteReader();
+    
+         if (!reader.HasRows)
+         {
+             return null;
+         }
+         
+         reader.Read();
+    
+         return new Habit
+         {
+             Id = reader.GetInt32(0),
+             Name = reader.GetString(1),
+             UnitOfMeasurement = reader.GetString(2)
+         };
+     }
     
     public void Delete(int id)
     {

@@ -9,6 +9,16 @@ public static class ConsoleHelpers
         Console.ResetColor();
     }
     
+    public static void WriteSuccessMessage(string message)
+    {
+        WriteColored($"\n{message}\n\n", ConsoleColor.Green);
+    }
+
+    public static void WriteInfoMessage(string message)
+    {
+        WriteColored($"{message}\n\n", ConsoleColor.Cyan);
+    }
+    
     public static void ClearCurrentConsoleLine()
     {
         int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;

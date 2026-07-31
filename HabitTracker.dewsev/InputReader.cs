@@ -68,14 +68,14 @@ public static class InputReader
     
     public static Habit? GetHabitChoice(List<Habit> habits)
     {
-        return GetEntityChoice(habits, ConsoleUi.ShowHabits, "Select a habit:");
+        return GetEntityChoice(habits, ConsoleRenderer.RenderHabitList, "Select a habit:");
     }
 
     public static Occurrence? GetOccurrenceChoice(List<Occurrence> occurrences, string unitOfMeasurement)
     {
         return GetEntityChoice(
             occurrences,
-            (o) => ConsoleUi.ShowOccurrences(o, unitOfMeasurement)
+            (o) => ConsoleRenderer.RenderOccurrenceListWithIds(o, unitOfMeasurement)
         );
     }
     
@@ -113,7 +113,7 @@ public static class InputReader
         while (true)
         {
             int? id = GetNumericNullable("Your choice (ENTER = Main Menu): ");
-            if (id == null)
+            if (id is null)
             {
                 return null;
             }
