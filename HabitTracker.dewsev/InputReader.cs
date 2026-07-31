@@ -31,7 +31,7 @@ public static class InputReader
                 return fallbackValue;
             }
             
-            if (!string.IsNullOrEmpty(input) && int.TryParse(input, out int numericInput) && numericInput >= 0)
+            if (int.TryParse(input, out int numericInput) && numericInput >= 0)
             {
                 return numericInput;
             }
