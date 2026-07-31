@@ -71,7 +71,7 @@ class Program
 
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage(false);
+            ConsoleRenderer.RenderEmptyHabitListMessage();
         }
         else
         {
@@ -88,20 +88,20 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage(false);
+            ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
+            return;
         }
-        else
-        {
-            Habit? habit = InputReader.GetHabitChoice(habits);
-            if (habit is null) return;
+
+        Habit? habit = InputReader.GetHabitChoice(habits);
+        if (habit is null) return;
             
-            List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
-            
-            Console.Clear();
-            ConsoleRenderer.RenderHabitWithOccurrences(habit, occurrences);
-            Console.WriteLine();
-        }
+        List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         
+        Console.Clear();
+        ConsoleRenderer.RenderHabitWithOccurrences(habit, occurrences);
+        
+        Console.WriteLine();
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -113,7 +113,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage(false);
+            ConsoleRenderer.RenderEmptyHabitListMessage();
         }
         else
         {
@@ -121,6 +121,9 @@ class Program
             Console.WriteLine();
         }
 
+        Console.WriteLine("---------------------------------------------");
+        ConsoleHelpers.WriteInfoMessage("Creating new habit...");
+        
         Habit? habit = CreateHabit();
         if (habit is null) return;
         
@@ -135,17 +138,19 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage();
+            ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
-
+        
         Console.Clear();
         
         Habit? habit = InputReader.GetHabitChoice(habits);
         if (habit is null) return;
-        
+    
         HabitsRepository.Delete(habit.Id);
-        ConsoleHelpers.WriteSuccessMessage("Habit deleted!");
+
+        ConsoleHelpers.WriteSuccessMessage("Habit deleted!");    
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -156,17 +161,20 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage();
+            ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
-
+        
         Habit? habit = InputReader.GetHabitChoice(habits);
         if (habit is null) return;
-        
+    
         Console.Clear();
         ConsoleHelpers.WriteInfoMessage($"Editing habit \"{habit.Name}\"...");
+        
         EditHabit(habit);
-        ConsoleHelpers.WriteSuccessMessage("Habit edited!");
+        
+        ConsoleHelpers.WriteSuccessMessage("Habit edited!");    
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -177,20 +185,21 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage();
+            ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
-
+        
         Habit? habit = InputReader.GetHabitChoice(habits);
         if (habit is null) return;
-        
+    
         Console.Clear();
         ConsoleHelpers.WriteInfoMessage($"Adding an occurrence for \"{habit.Name}\"...");
-        
+    
         Occurrence? occurence = CreateOccurrence(habit.Id);
         if (occurence is null) return;
-        
-        ConsoleHelpers.WriteSuccessMessage("Occurrence added!");
+    
+        ConsoleHelpers.WriteSuccessMessage("Occurrence added!");    
         InputReader.AwaitAnyKeyPress();
     }
 
@@ -199,32 +208,36 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage();
+            ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
-
-        Console.Clear();
         
+        Console.Clear();
+    
         Habit? habit = InputReader.GetHabitChoice(habits);
         if (habit is null) return;
-        
+    
         Console.Clear();
-        
+    
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         if (occurrences.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyOccurrencesMessage();
+            ConsoleRenderer.RenderEmptyOccurrenceListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
         
         ConsoleHelpers.WriteInfoMessage($"Editing an occurrence for \"{habit.Name}\"...");
         Occurrence? occurrence = InputReader.GetOccurrenceChoice(occurrences, habit.UnitOfMeasurement);
         if (occurrence is null) return;
-        
+
         Console.Clear();
         ConsoleHelpers.WriteInfoMessage($"Editing occurrence with ID {occurrence.Id} for \"{habit.Name}\"...");
+        
         EditOccurrence(occurrence);
-        ConsoleHelpers.WriteSuccessMessage("Occurrence edited!");
+        
+        ConsoleHelpers.WriteSuccessMessage("Occurrence edited!");    
         InputReader.AwaitAnyKeyPress();
     }
     
@@ -235,7 +248,7 @@ class Program
         List<Habit> habits = HabitsRepository.GetAll();
         if (habits.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyHabitsMessage();
+            ConsoleRenderer.RenderEmptyHabitListMessage();
             return;
         }
     
@@ -249,7 +262,7 @@ class Program
         List<Occurrence> occurrences = OccurrencesRepository.GetAllByHabitId(habit.Id);
         if (occurrences.Count == 0)
         {
-            ConsoleRenderer.RenderEmptyOccurrencesMessage();
+            ConsoleRenderer.RenderEmptyOccurrenceListMessage();
             return;
         }
 
@@ -264,8 +277,6 @@ class Program
     
     private static Habit? CreateHabit()
     {
-        Console.WriteLine("---------------------------------------------");
-        ConsoleHelpers.WriteInfoMessage("Creating new habit...");
         string? name = InputReader.GetStringNullable("Name (ENTER = Main Menu): ");
         if (name is null) return null;
         

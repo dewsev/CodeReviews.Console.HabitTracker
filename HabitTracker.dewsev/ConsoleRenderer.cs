@@ -61,19 +61,13 @@ public static class ConsoleRenderer
         }
     }
     
-    public static void RenderEmptyHabitsMessage(bool awaitInput = true)
+    public static void RenderEmptyHabitListMessage()
     {
         Console.WriteLine("You have not created any habits yet.\n");
-
-        if (awaitInput)
-        {
-            InputReader.AwaitAnyKeyPress();    
-        }
     }
 
-    public static void RenderEmptyOccurrencesMessage()
+    public static void RenderEmptyOccurrenceListMessage()
     {
         Console.WriteLine("This habit doesn't have any occurrences yet.\n");
-        InputReader.AwaitAnyKeyPress();
     }
 }
