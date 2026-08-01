@@ -1,15 +1,29 @@
-﻿using HabitTracker.dewsev.Entities;
+﻿using System.Runtime.InteropServices.ComTypes;
+using HabitTracker.dewsev.Entities;
+using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
 
 class Program
 {
     private const string DbConnectionString = "Data Source=HabitTracker.db";
+    private static readonly DbInitializer DbInitializer = new();
     private static readonly HabitsRepository HabitsRepository = new(DbConnectionString);
     private static readonly OccurrencesRepository OccurrencesRepository = new(DbConnectionString);
     
     static void Main(string[] args)
     {
+        try
+        {
+            DbInitializer.Initialize(DbConnectionString);
+        }
+        catch (SqliteException ex)
+        {
+            ConsoleHelpers.WriteErrorMessage("Failed to create DB. Application exiting.");
+            Environment.Exit(ex.ErrorCode);
+        }
+        
+        
         while (true)
         {
             MainMenu();    

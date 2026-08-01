@@ -19,6 +19,11 @@ public static class ConsoleHelpers
         WriteColored($"{message}\n\n", ConsoleColor.Cyan);
     }
     
+    public static void WriteErrorMessage(string message)
+    {
+        WriteColored($"{message}\n\n", ConsoleColor.Red);
+    }
+    
     public static void ClearCurrentConsoleLine()
     {
         int cursorPosition = Console.CursorTop > 0 ? Console.CursorTop - 1 : Console.CursorTop;

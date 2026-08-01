@@ -9,26 +9,8 @@ public class HabitsRepository
     public HabitsRepository(string connectionString)
     {
         _connectionString = connectionString;
-        CreateTable();
     }
 
-    private void CreateTable()
-    {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
-            
-        using var command = connection.CreateCommand();
-        
-        command.CommandText =
-            @"CREATE TABLE IF NOT EXISTS Habits (
-                    HabitID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Name TEXT NOT NULL,
-                    UnitOfMeasurement TEXT NOT NULL
-                    )";
-
-        command.ExecuteNonQuery();
-    }
-    
     public List<Habit> GetAll()
     {
         using var connection = new SqliteConnection(_connectionString);

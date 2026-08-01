@@ -10,26 +10,6 @@ public class OccurrencesRepository
     public OccurrencesRepository(string connectionString)
     {
         _connectionString = connectionString;
-        CreateTable();
-    }
-
-    private void CreateTable()
-    {
-        using var connection = new SqliteConnection(_connectionString);
-        connection.Open();
-        
-        using var createTableCommand = connection.CreateCommand();
-        
-        createTableCommand.CommandText =
-            @"CREATE TABLE IF NOT EXISTS Occurrences (
-                    OccurrenceID INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Date TEXT NOT NULL,
-                    Quantity INTEGER NOT NULL,
-                    HabitID INTEGER NOT NULL,
-                    FOREIGN KEY (HabitID) REFERENCES Habits(HabitID) ON DELETE CASCADE
-                    )";
-
-        createTableCommand.ExecuteNonQuery();
     }
 
     public List<Occurrence> GetAll()
