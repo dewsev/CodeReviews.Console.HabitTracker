@@ -1,3 +1,4 @@
+using HabitTracker.dewsev.Entities;
 using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
@@ -74,7 +75,7 @@ public class DbInitializer
         command.Transaction = transaction;
 
         command.Parameters.Add("@key", SqliteType.Text).Value = key;
-        command.Parameters.Add("@appliedAt", SqliteType.Text).Value = DateFormatter.FormatDateTime(DateTime.Now);
+        command.Parameters.Add("@appliedAt", SqliteType.Text).Value = DateParser.GetDateTimeString(DateTime.Now);
         command.CommandText = "INSERT INTO SeedState (Key, AppliedAt) VALUES (@key, @appliedAt);";
 
         command.ExecuteNonQuery();
@@ -94,10 +95,10 @@ public class DbInitializer
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
 
-        List<string> sqlValues = [];
+        string[] sqlValues = new string[habits.Length];
         for (int i = 0; i < habits.Length; i++)
         {
-            sqlValues.Add($"(@id{i}, @name{i}, @unit{i})");
+            sqlValues[i] = $"(@id{i}, @name{i}, @unit{i})";
             command.Parameters.AddWithValue($"@id{i}", habits[i].Id);
             command.Parameters.AddWithValue($"@name{i}", habits[i].Name);
             command.Parameters.AddWithValue($"@unit{i}", habits[i].UnitOfMeasurement);
@@ -111,6 +112,18 @@ public class DbInitializer
 
     private static void InsertOccurrences(SqliteConnection connection, SqliteTransaction transaction)
     {
-        // Generate random occurrences
+        Random random = new Random();
+        int count = 100;
+
+        string[] sqlValues = new string[100];
+        
+        for (int i = 1; i <= count; i++)
+        {
+            int day = random.Next(1, 29);
+            int month = random.Next(1, 12);
+            int year = random.Next(2024, 2027);
+
+            sqlValues[i] = "";
+        }
     }
 }

@@ -47,10 +47,10 @@ public static class InputReader
 
         if (string.IsNullOrEmpty(input))
         {
-            return DateFormatter.FormatDateTime(fallbackValue);
+            return DateParser.GetDateTimeString(fallbackValue);
         }
         
-        while (!DateTime.TryParseExact(input, DateFormatter.DateFormat, DateFormatter.Culture, DateTimeStyles.None, out _))
+        while (!DateParser.IsValidDateFormat(input))
         {
             ConsoleHelpers.WriteColored("Invalid date format. Try again.\n", ConsoleColor.Red);
             Console.Write(message);

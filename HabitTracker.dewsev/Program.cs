@@ -311,7 +311,7 @@ class Program
     private static Occurrence? CreateOccurrence(int habitId)
     {
         string date = InputReader.GetDateWithFallback(
-            $"Provide a date ({DateFormatter.DateFormat} or ENTER for today): ", 
+            $"Provide a date ({DateParser.DateFormat} or ENTER for today): ", 
             DateTime.Now
         );
         
@@ -324,7 +324,7 @@ class Program
     private static void EditOccurrence(Occurrence occurrence)
         {
             string date = InputReader.GetDateWithFallback(
-                $"Provide new date (ENTER = {DateFormatter.FormatDateTime(occurrence.Date)}): ", 
+                $"Provide new date (ENTER = {DateParser.GetDateTimeString(occurrence.Date)}): ", 
                 occurrence.Date
             );
             

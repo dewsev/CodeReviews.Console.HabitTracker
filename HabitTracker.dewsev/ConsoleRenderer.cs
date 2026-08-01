@@ -35,7 +35,7 @@ public static class ConsoleRenderer
             Occurrence occurrence = occurrences[i];
                 
             string prefixCharacter = i == occurrences.Count - 1 ? "└──" : "├──";
-            Console.Write($"{prefixCharacter} {DateFormatter.FormatDateTime(occurrence.Date)}");
+            Console.Write($"{prefixCharacter} {DateParser.GetDateTimeString(occurrence.Date)}");
             Console.Write(" — ");
             Console.Write($"{occurrence.Quantity} {unitOfMeasurement}\n");
         }
@@ -55,7 +55,7 @@ public static class ConsoleRenderer
         foreach (Occurrence occurrence in occurrences)
         {
             ConsoleHelpers.WriteColored($"{occurrence.Id}.", ConsoleColor.Cyan);
-            Console.Write(DateFormatter.FormatDateTime(occurrence.Date));
+            Console.Write(DateParser.GetDateTimeString(occurrence.Date));
             Console.Write(" — ");
             Console.Write($"{occurrence.Quantity} {unitOfMeasurement}\n");
         }

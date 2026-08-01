@@ -29,7 +29,7 @@ public class OccurrencesRepository
             occurrences.Add(new Occurrence
             {
                 Id = reader.GetInt32(0),
-                Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
+                Date = DateParser.ParseDateTimeString(reader.GetString(1)),
                 Quantity = reader.GetInt32(2),
                 HabitId = reader.GetInt32(3)
             });
@@ -57,7 +57,7 @@ public class OccurrencesRepository
             occurrences.Add(new Occurrence
             {
                 Id = reader.GetInt32(0),
-                Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
+                Date = DateParser.ParseDateTimeString(reader.GetString(1)),
                 Quantity = reader.GetInt32(2),
                 HabitId = reader.GetInt32(3),
             });
@@ -100,7 +100,7 @@ public class OccurrencesRepository
         return new Occurrence
         {
             Id = reader.GetInt32(0),
-            Date = DateTime.ParseExact(reader.GetString(1), DateFormatter.DateFormat, DateFormatter.Culture),
+            Date = DateParser.ParseDateTimeString(reader.GetString(1)),
             Quantity = reader.GetInt32(2),
             HabitId = reader.GetInt32(3),
         };
