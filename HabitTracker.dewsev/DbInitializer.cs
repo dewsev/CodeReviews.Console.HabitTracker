@@ -83,29 +83,16 @@ public class DbInitializer
 
     private static void InsertHabits(SqliteConnection connection, SqliteTransaction transaction)
     {
-        var habits = new[]
-        {
-            new Habit{ Id = 1, Name = "Exercising", UnitOfMeasurement = "minutes" },
-            new Habit{ Id = 2, Name = "Programming", UnitOfMeasurement = "minutes" },
-            new Habit{ Id = 3, Name = "Reading", UnitOfMeasurement = "minutes" },
-            new Habit{ Id = 4, Name = "Sleeping good", UnitOfMeasurement = "hours" },
-            new Habit{ Id = 5, Name = "Water drinking", UnitOfMeasurement = "cups" },
-        };
-        
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-
-        string[] sqlValues = new string[habits.Length];
-        for (int i = 0; i < habits.Length; i++)
-        {
-            sqlValues[i] = $"(@id{i}, @name{i}, @unit{i})";
-            command.Parameters.AddWithValue($"@id{i}", habits[i].Id);
-            command.Parameters.AddWithValue($"@name{i}", habits[i].Name);
-            command.Parameters.AddWithValue($"@unit{i}", habits[i].UnitOfMeasurement);
-        }
         
         command.CommandText =
-            $"INSERT INTO Habits (HabitID, Name, UnitOfMeasurement) VALUES {string.Join(",", sqlValues)};";
+            @"INSERT INTO Habits (HabitID, Name, UnitOfMeasurement) VALUES
+              (1, 'Exercising', 'minutes'),
+              (2, 'Programming', 'minutes'),
+              (3, 'Reading', 'minutes'),
+              (4, 'Sleeping', 'hours'),
+              (5, 'Water drinking', 'cups')";
 
         command.ExecuteNonQuery();
     }
@@ -115,7 +102,10 @@ public class DbInitializer
         Random random = new Random();
         int count = 100;
 
-        string[] sqlValues = new string[100];
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        
+        string[] sqlValues = new string[count];
         
         for (int i = 1; i <= count; i++)
         {
@@ -123,7 +113,19 @@ public class DbInitializer
             int month = random.Next(1, 12);
             int year = random.Next(2024, 2027);
 
-            sqlValues[i] = "";
+            string date = DateParser.GetDateTimeString(new DateTime(year, month, day));
+            int habitId = random.Next(1, 6);
+            int quantity = random.Next(5, 13);
+            
+            sqlValues[i - 1] = $"(@id{i}, @date{i}, @quantity{i}, @habitId{i})";
+            command.Parameters.AddWithValue($"@id{i}", i);
+            command.Parameters.AddWithValue($"@date{i}", date);
+            command.Parameters.AddWithValue($"@quantity{i}", quantity);
+            command.Parameters.AddWithValue($"@habitId{i}", habitId);
         }
+        
+        command.CommandText = $"INSERT INTO Occurrences VALUES {string.Join(",", sqlValues)}";
+        
+        command.ExecuteNonQuery();
     }
 }
