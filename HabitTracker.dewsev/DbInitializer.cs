@@ -14,7 +14,17 @@ public class DbInitializer
         try
         {
             CreateTables(connection, transaction);
-            InsertSeedData(connection, transaction);
+
+            const string seedKey = "seed_v1";
+            bool needsSeeding = NeedsSeeding(connection, transaction, seedKey);
+
+            if (needsSeeding)
+            {
+                InsertSeed(connection, transaction, seedKey);
+                InsertHabits(connection, transaction);
+                InsertOccurrences(connection, transaction);
+            }
+            
             transaction.Commit();
         }
         catch
@@ -49,24 +59,15 @@ public class DbInitializer
         command.ExecuteNonQuery();
     }
 
-    private static void InsertSeedData(SqliteConnection connection, SqliteTransaction transaction)
+    private static bool NeedsSeeding(SqliteConnection connection, SqliteTransaction transaction, string seedKey)
     {
-        // TODO: This method is doing too much work
-        const string seedKey = "seed_v1";
-
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         
         command.Parameters.Add("@key", SqliteType.Text).Value = seedKey;
         command.CommandText = "SELECT 1 FROM SeedState WHERE Key = @key LIMIT 1";
 
-        bool alreadySeeded = command.ExecuteScalar() != null;
-        if (alreadySeeded) return;
-        
-        Console.WriteLine("SEEDING....");
-        InsertSeed(connection, transaction, seedKey);
-        InsertHabits(connection, transaction);
-        InsertOccurrences(connection, transaction);
+       return command.ExecuteScalar() == null;
     }
 
     private static void InsertSeed(SqliteConnection connection, SqliteTransaction transaction, string key)
