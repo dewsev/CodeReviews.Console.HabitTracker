@@ -7,7 +7,7 @@ namespace HabitTracker.dewsev;
 class Program
 {
     private const string DbConnectionString = "Data Source=HabitTracker.db";
-    private static readonly DbInitializer DbInitializer = new();
+    private static readonly DbInitializer DbInitializer = new(DbConnectionString);
     private static readonly HabitsRepository HabitsRepository = new(DbConnectionString);
     private static readonly OccurrencesRepository OccurrencesRepository = new(DbConnectionString);
     
@@ -15,7 +15,7 @@ class Program
     {
         try
         {
-            DbInitializer.Initialize(DbConnectionString);
+            DbInitializer.Initialize();
         }
         catch (SqliteException ex)
         {

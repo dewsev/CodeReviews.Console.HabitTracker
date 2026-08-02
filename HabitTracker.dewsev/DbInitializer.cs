@@ -1,43 +1,49 @@
-using HabitTracker.dewsev.Entities;
 using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
 
 public class DbInitializer
 {
-    public void Initialize(string connectionString)
+    private const string InitialSeedKey = "seed_v1";
+    private readonly SqliteConnection _connection;
+    private readonly SqliteTransaction _transaction;
+
+    public DbInitializer(string connectionString)
     {
-        using var connection = new SqliteConnection(connectionString);
-        connection.Open();
-
-        using var transaction = connection.BeginTransaction();
-        try
+        _connection = new SqliteConnection(connectionString);
+        _connection.Open();
+        _transaction = _connection.BeginTransaction();
+    }
+    
+    public void Initialize()
+    {
+        using (_connection)
         {
-            CreateTables(connection, transaction);
-
-            const string seedKey = "seed_v1";
-            bool needsSeeding = NeedsSeeding(connection, transaction, seedKey);
-
-            if (needsSeeding)
+            try
             {
-                InsertSeed(connection, transaction, seedKey);
-                InsertHabits(connection, transaction);
-                InsertOccurrences(connection, transaction);
-            }
+                CreateTables();
+
+                if (NeedsSeeding())
+                {
+                    InsertSeed();
+                    InsertHabits();
+                    InsertOccurrences();
+                }
             
-            transaction.Commit();
-        }
-        catch
-        {
-            transaction.Rollback();
-            throw;
+                _transaction.Commit();
+            }
+            catch
+            {
+                _transaction.Rollback();
+                throw;
+            }
         }
     }
 
-    private static void CreateTables(SqliteConnection connection, SqliteTransaction transaction)
+    private void CreateTables()
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
+        using var command = _connection.CreateCommand();
+        command.Transaction = _transaction;
         
         command.CommandText =
             @"CREATE TABLE IF NOT EXISTS Habits (
@@ -59,33 +65,33 @@ public class DbInitializer
         command.ExecuteNonQuery();
     }
 
-    private static bool NeedsSeeding(SqliteConnection connection, SqliteTransaction transaction, string seedKey)
+    private bool NeedsSeeding()
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
+        using var command = _connection.CreateCommand();
+        command.Transaction = _transaction;
         
-        command.Parameters.Add("@key", SqliteType.Text).Value = seedKey;
+        command.Parameters.Add("@key", SqliteType.Text).Value = InitialSeedKey;
         command.CommandText = "SELECT 1 FROM SeedState WHERE Key = @key LIMIT 1";
 
        return command.ExecuteScalar() == null;
     }
 
-    private static void InsertSeed(SqliteConnection connection, SqliteTransaction transaction, string key)
+    private void InsertSeed()
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
+        using var command = _connection.CreateCommand();
+        command.Transaction = _transaction;
 
-        command.Parameters.Add("@key", SqliteType.Text).Value = key;
+        command.Parameters.Add("@key", SqliteType.Text).Value = InitialSeedKey;
         command.Parameters.Add("@appliedAt", SqliteType.Text).Value = DateParser.GetDateTimeString(DateTime.Now);
         command.CommandText = "INSERT INTO SeedState (Key, AppliedAt) VALUES (@key, @appliedAt);";
 
         command.ExecuteNonQuery();
     }
 
-    private static void InsertHabits(SqliteConnection connection, SqliteTransaction transaction)
+    private void InsertHabits()
     {
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
+        using var command = _connection.CreateCommand();
+        command.Transaction = _transaction;
         
         command.CommandText =
             @"INSERT INTO Habits (HabitID, Name, UnitOfMeasurement) VALUES
@@ -98,13 +104,13 @@ public class DbInitializer
         command.ExecuteNonQuery();
     }
 
-    private static void InsertOccurrences(SqliteConnection connection, SqliteTransaction transaction)
+    private void InsertOccurrences()
     {
         Random random = new Random();
         int count = 100;
 
-        using var command = connection.CreateCommand();
-        command.Transaction = transaction;
+        using var command = _connection.CreateCommand();
+        command.Transaction = _transaction;
         
         string[] sqlValues = new string[count];
         
