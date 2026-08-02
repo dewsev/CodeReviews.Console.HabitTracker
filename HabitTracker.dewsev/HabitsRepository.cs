@@ -61,7 +61,9 @@ public class HabitsRepository
         command.Parameters.Add("@name", SqliteType.Text).Value = name;
         command.Parameters.Add("@unitOfMeasurement", SqliteType.Text).Value = unitOfMeasurement;
         
-        command.CommandText = "INSERT INTO Habits (Name, UnitOfMeasurement) VALUES (@name, @unitOfMeasurement) RETURNING *";
+        command.CommandText = @"INSERT INTO Habits (Name, UnitOfMeasurement) 
+                                VALUES (@name, @unitOfMeasurement) 
+                                RETURNING Id, Name, UnitOfMeasurement";
 
         using var reader = command.ExecuteReader();
 

@@ -91,7 +91,9 @@ public class OccurrencesRepository
         command.Parameters.Add("@quantity", SqliteType.Integer).Value = quantity;
         command.Parameters.Add("@habitId", SqliteType.Integer).Value = habitId;
         
-        command.CommandText = "INSERT INTO Occurrences (Date, Quantity, HabitID) VALUES (@date, @quantity, @habitId) RETURNING *";
+        command.CommandText = @"INSERT INTO Occurrences (Date, Quantity, HabitID) 
+                                VALUES (@date, @quantity, @habitId) 
+                                RETURNING Id, Date, Quantity, HabitId";
     
         using var reader = command.ExecuteReader();
 
