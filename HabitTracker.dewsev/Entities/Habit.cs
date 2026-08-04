@@ -1,4 +1,4 @@
-namespace HabitTracker.dewsev;
+namespace HabitTracker.dewsev.Entities;
 
 public record Habit : IEntity
 {

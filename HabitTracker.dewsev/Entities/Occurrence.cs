@@ -1,4 +1,3 @@
-
 namespace HabitTracker.dewsev.Entities;
 
 public record Occurrence : IEntity

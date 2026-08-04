@@ -1,3 +1,4 @@
+using HabitTracker.dewsev.Entities;
 using Microsoft.Data.Sqlite;
 
 namespace HabitTracker.dewsev;
