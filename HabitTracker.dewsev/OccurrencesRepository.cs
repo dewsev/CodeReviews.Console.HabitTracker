@@ -93,7 +93,7 @@ public class OccurrencesRepository
         
         command.CommandText = @"INSERT INTO Occurrences (Date, Quantity, HabitID) 
                                 VALUES (@date, @quantity, @habitId) 
-                                RETURNING Id, Date, Quantity, HabitId";
+                                RETURNING OccurrenceID, Date, Quantity, HabitId";
     
         using var reader = command.ExecuteReader();
 

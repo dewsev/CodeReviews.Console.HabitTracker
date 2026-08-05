@@ -64,7 +64,7 @@ public class HabitsRepository
         
         command.CommandText = @"INSERT INTO Habits (Name, UnitOfMeasurement) 
                                 VALUES (@name, @unitOfMeasurement) 
-                                RETURNING Id, Name, UnitOfMeasurement";
+                                RETURNING HabitID, Name, UnitOfMeasurement";
 
         using var reader = command.ExecuteReader();
 
