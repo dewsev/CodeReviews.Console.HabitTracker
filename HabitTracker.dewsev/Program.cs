@@ -262,6 +262,7 @@ class Program
         if (habits.Count == 0)
         {
             ConsoleRenderer.RenderEmptyHabitListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
     
@@ -276,6 +277,7 @@ class Program
         if (occurrences.Count == 0)
         {
             ConsoleRenderer.RenderEmptyOccurrenceListMessage();
+            InputReader.AwaitAnyKeyPress();
             return;
         }
 

@@ -28,10 +28,10 @@ public class OccurrencesRepository
         {
             occurrences.Add(new Occurrence
             {
-                Id = reader.GetInt32(0),
-                Date = DateParser.ParseDateTimeString(reader.GetString(1)),
-                Quantity = reader.GetInt32(2),
-                HabitId = reader.GetInt32(3)
+                Id = reader.GetInt32(reader.GetOrdinal("OccurrenceID")),
+                Date = DateParser.ParseDateTimeString(reader.GetString(reader.GetOrdinal("Date"))),
+                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                HabitId = reader.GetInt32(reader.GetOrdinal("HabitID"))
             });
         }
   
@@ -56,10 +56,10 @@ public class OccurrencesRepository
         {
             occurrences.Add(new Occurrence
             {
-                Id = reader.GetInt32(0),
-                Date = DateParser.ParseDateTimeString(reader.GetString(1)),
-                Quantity = reader.GetInt32(2),
-                HabitId = reader.GetInt32(3),
+                Id = reader.GetInt32(reader.GetOrdinal("OccurrenceID")),
+                Date = DateParser.ParseDateTimeString(reader.GetString(reader.GetOrdinal("Date"))),
+                Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+                HabitId = reader.GetInt32(reader.GetOrdinal("HabitID")),
             });
         }
   
@@ -93,7 +93,7 @@ public class OccurrencesRepository
         
         command.CommandText = @"INSERT INTO Occurrences (Date, Quantity, HabitID) 
                                 VALUES (@date, @quantity, @habitId) 
-                                RETURNING OccurrenceID, Date, Quantity, HabitId";
+                                RETURNING *";
     
         using var reader = command.ExecuteReader();
 
@@ -101,10 +101,10 @@ public class OccurrencesRepository
 
         return new Occurrence
         {
-            Id = reader.GetInt32(0),
-            Date = DateParser.ParseDateTimeString(reader.GetString(1)),
-            Quantity = reader.GetInt32(2),
-            HabitId = reader.GetInt32(3),
+            Id = reader.GetInt32(reader.GetOrdinal("OccurrenceID")),
+            Date = DateParser.ParseDateTimeString(reader.GetString(reader.GetOrdinal("Date"))),
+            Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
+            HabitId = reader.GetInt32(reader.GetOrdinal("HabitID")),
         };
     }
     

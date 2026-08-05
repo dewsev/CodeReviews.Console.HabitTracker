@@ -29,9 +29,9 @@ public class HabitsRepository
         {
             habits.Add(new Habit
             {
-                Id = reader.GetInt32(0),
-                Name = reader.GetString(1),
-                UnitOfMeasurement = reader.GetString(2)
+                Id = reader.GetInt32(reader.GetOrdinal("HabitID")),
+                Name = reader.GetString(reader.GetOrdinal("Name")),
+                UnitOfMeasurement = reader.GetString(reader.GetOrdinal("UnitOfMeasurement"))
             });
         }
 
@@ -64,7 +64,7 @@ public class HabitsRepository
         
         command.CommandText = @"INSERT INTO Habits (Name, UnitOfMeasurement) 
                                 VALUES (@name, @unitOfMeasurement) 
-                                RETURNING HabitID, Name, UnitOfMeasurement";
+                                RETURNING *";
 
         using var reader = command.ExecuteReader();
 
@@ -72,9 +72,9 @@ public class HabitsRepository
 
         return new Habit
         {
-            Id = reader.GetInt32(0),
-            Name = reader.GetString(1),
-            UnitOfMeasurement = reader.GetString(2)
+            Id = reader.GetInt32(reader.GetOrdinal("HabitID")),
+            Name = reader.GetString(reader.GetOrdinal("Name")),
+            UnitOfMeasurement = reader.GetString(reader.GetOrdinal("UnitOfMeasurement"))
         };
     }
     
